@@ -1,0 +1,7 @@
+flask
+pytz
+pandas
+tabulate
+yfinance
+twilio
+requests
