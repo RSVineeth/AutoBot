@@ -6,17 +6,27 @@ from tabulate import tabulate
 import requests
 import pytz
 import os
-import builtins
-_original_print = print
-def autoflush_print(*args, **kwargs):
-    return _original_print(*args, flush=True, **kwargs)
-builtins.print = autoflush_print
+# import builtins
+# _original_print = print
+# def autoflush_print(*args, **kwargs):
+#     return _original_print(*args, flush=True, **kwargs)
+# builtins.print = autoflush_print
+import logging
+
+# Setup logging to stdout with timestamps
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
+# Optional: Replace print with logging if preferred
+print = logging.info
 
 
 
 # Telegram config
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
+TELEGRAM_CHAT_ID = '1012793457'
+# TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+# TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -28,16 +38,16 @@ def send_telegram_message(message):
         print("❌ Telegram message failed", response.text)
 
 # Settings
-# TICKERS = [
-#     "FILATFASH.NS", "SRESTHA.BO", "HARSHILAGR.BO", "GTLINFRA.NS", "ITC.NS",
-#     "OBEROIRLTY.NS", "JAMNAAUTO.NS", "KSOLVES.NS", "ADANIGREEN.NS",
-#     "TATAMOTORS.NS", "OLECTRA.NS", "ARE&M.NS", "AFFLE.NS", "BEL.NS",
-#     "SUNPHARMA.NS", "LAURUSLABS.NS", "RELIANCE.NS", "KRBL.NS", "ONGC.NS",
-#     "IDFCFIRSTB.NS", "BANKBARODA.NS", "GSFC.NS", "TCS.NS", "INFY.NS"
-# ]
+TICKERS = [
+    "FILATFASH.NS", "SRESTHA.BO", "HARSHILAGR.BO", "GTLINFRA.NS", "ITC.NS",
+    "OBEROIRLTY.NS", "JAMNAAUTO.NS", "KSOLVES.NS", "ADANIGREEN.NS",
+    "TATAMOTORS.NS", "OLECTRA.NS", "ARE&M.NS", "AFFLE.NS", "BEL.NS",
+    "SUNPHARMA.NS", "LAURUSLABS.NS", "RELIANCE.NS", "KRBL.NS", "ONGC.NS",
+    "IDFCFIRSTB.NS", "BANKBARODA.NS", "GSFC.NS", "TCS.NS", "INFY.NS"
+]
 
-tickers_str = os.getenv("TICKERS")
-TICKERS = tickers_str.split(",") if tickers_str else []
+# tickers_str = os.getenv("TICKERS")
+# TICKERS = tickers_str.split(",") if tickers_str else []
 
 
 SHARES_TO_BUY = 2
