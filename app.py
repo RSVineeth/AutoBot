@@ -14,10 +14,13 @@ def home():
     return Response("Bot is running!", status=200)
 
 def start_bot():
+    print("🚀 Starting trading_loop thread")
     thread = threading.Thread(target=main)
     thread.daemon = True
     thread.start()
 
+start_bot()
+
 if __name__ == "__main__":
-    start_bot()
+    # start_bot()
     app.run(host="0.0.0.0", port=varport, threaded=True)
