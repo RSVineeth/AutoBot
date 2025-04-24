@@ -23,10 +23,10 @@ print = logging.info
 
 # Telegram config
 
-TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
-TELEGRAM_CHAT_ID = '1012793457'
-# TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-# TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+# TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
+# TELEGRAM_CHAT_ID = '1012793457'
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 def send_telegram_message(message):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -38,16 +38,16 @@ def send_telegram_message(message):
         print("❌ Telegram message failed", response.text)
 
 # Settings
-TICKERS = [
-    "FILATFASH.NS", "SRESTHA.BO", "HARSHILAGR.BO", "GTLINFRA.NS", "ITC.NS",
-    "OBEROIRLTY.NS", "JAMNAAUTO.NS", "KSOLVES.NS", "ADANIGREEN.NS",
-    "TATAMOTORS.NS", "OLECTRA.NS", "ARE&M.NS", "AFFLE.NS", "BEL.NS",
-    "SUNPHARMA.NS", "LAURUSLABS.NS", "RELIANCE.NS", "KRBL.NS", "ONGC.NS",
-    "IDFCFIRSTB.NS", "BANKBARODA.NS", "GSFC.NS", "TCS.NS", "INFY.NS"
-]
+# TICKERS = [
+#     "FILATFASH.NS", "SRESTHA.BO", "HARSHILAGR.BO", "GTLINFRA.NS", "ITC.NS",
+#     "OBEROIRLTY.NS", "JAMNAAUTO.NS", "KSOLVES.NS", "ADANIGREEN.NS",
+#     "TATAMOTORS.NS", "OLECTRA.NS", "ARE&M.NS", "AFFLE.NS", "BEL.NS",
+#     "SUNPHARMA.NS", "LAURUSLABS.NS", "RELIANCE.NS", "KRBL.NS", "ONGC.NS",
+#     "IDFCFIRSTB.NS", "BANKBARODA.NS", "GSFC.NS", "TCS.NS", "INFY.NS"
+# ]
 
-# tickers_str = os.getenv("TICKERS")
-# TICKERS = tickers_str.split(",") if tickers_str else []
+tickers_str = os.getenv("TICKERS")
+TICKERS = tickers_str.split(",") if tickers_str else []
 
 
 SHARES_TO_BUY = 2
@@ -151,14 +151,19 @@ def main():
         current_time = now_ist.strftime("%H:%M")
         today = now_ist.date()
 
-        # Alive checks
-        if current_time == "09:15" and state["last_alive_915"] != today:
-            send_telegram_message("✅ Bot is alive – 9:15 AM check-in")
-            state["last_alive_915"] = today
+        # Alive checks (within time ranges, once per day)
+        if 9 <= now_ist.hour <= 9 and 15 <= now_ist.minute <= 30:
+            if state["last_alive_915"] != today:
+                send_telegram_message("✅ Bot is alive – morning check")
+                print("✅ Bot is alive – morning check")
+                state["last_alive_915"] = today
 
-        if current_time == "15:00" and state["last_alive_300"] != today:
-            send_telegram_message("✅ Bot is alive – 3:00 PM check-in")
-            state["last_alive_300"] = today
+        if 15 <= now_ist.hour <= 15 and 0 <= now_ist.minute <= 15:
+            if state["last_alive_300"] != today:
+                send_telegram_message("✅ Bot is alive – afternoon check")
+                print("✅ Bot is alive – afternoon check")
+                state["last_alive_300"] = today
+
 
         # Exit on Friday afternoon
         if is_friday_exit_time():
