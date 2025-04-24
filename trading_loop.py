@@ -7,8 +7,11 @@ import requests
 import pytz
 import os
 import builtins
-original_print = builtins.print
-builtins.print = lambda *args, **kwargs: original_print(*args, flush=True, **kwargs)
+_original_print = print
+def autoflush_print(*args, **kwargs):
+    return _original_print(*args, flush=True, **kwargs)
+builtins.print = autoflush_print
+
 
 
 # Telegram config
