@@ -6,6 +6,10 @@ from tabulate import tabulate
 import requests
 import pytz
 import os
+import builtins
+original_print = builtins.print
+builtins.print = lambda *args, **kwargs: original_print(*args, flush=True, **kwargs)
+
 
 # Telegram config
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -118,6 +122,10 @@ def get_ist_now():
     return datetime.now(pytz.timezone("Asia/Kolkata"))
 
 def main():
+    print("✅ trading_loop.py: main() started")
+    print("📊 Loaded TICKERS:", TICKERS)
+
+
     state = {
         "last_alive_915": None,
         "last_alive_300": None,
