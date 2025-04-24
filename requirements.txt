@@ -5,3 +5,4 @@ tabulate
 yfinance
 twilio
 requests
+gunicorn

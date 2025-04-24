@@ -1,5 +1,7 @@
 from flask import Flask, Response
 import os
+from trading_loop import main  # import the function
+
 
 varport = int(os.getenv("PORT", 5000))
 
