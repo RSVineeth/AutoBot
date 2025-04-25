@@ -13,9 +13,12 @@ import os
 # builtins.print = autoflush_print
 import logging
 
+
 # Setup logging to stdout with timestamps
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-
+logging.getLogger("yfinance").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("requests").setLevel(logging.WARNING)
 # Optional: Replace print with logging if preferred
 print = logging.info
 
@@ -74,13 +77,13 @@ def get_historical_data(ticker, period="3mo"):
         stock_info = yf.Ticker(ticker)
         history = stock_info.history(period=period)
         if history.empty:
-            print(f"⚠️ {ticker}: possibly delisted; no price data found (period={period})")
+            print(f"⚠️ {ticker}: No price data found (period={period}) – removing.")
             return None
         if hasattr(history.index, 'tz'):
             history.index = history.index.tz_localize(None)
         return history
     except Exception as e:
-        print("❌ Error fetching data for %s: %s", ticker, str(e))
+        print(f"❌ {ticker}: Error fetching data: {e}")
         return None
     
 def calculate_sma(data, window=20):
@@ -182,6 +185,7 @@ def main():
 
         action_changed = False
         table_data = []
+        bad_tickers = []
 
         for ticker in TICKERS:
             if is_upcoming_earnings(ticker):
@@ -190,10 +194,8 @@ def main():
 
             data = get_historical_data(ticker)
             if data is None or data.empty:
-                print(f"⚠️ {ticker}: No data — removing {ticker} from TICKERS")
-                TICKERS.remove(ticker)
-                stock_data.pop(ticker, None)
-                last_actions.pop(ticker, None)
+                print(f"⚠️ {ticker}: No data — removing from tracking")
+                bad_tickers.append(ticker)
                 continue
 
 
@@ -256,6 +258,11 @@ def main():
                 f"{stock['sell_threshold']:.2f}" if stock['sell_threshold'] else "N/A",
                 f"{change:.2f}%" if change else "N/A", action
             ])
+
+        for ticker in bad_tickers:
+            TICKERS.remove(ticker)
+            stock_data.pop(ticker, None)
+            last_actions.pop(ticker, None)
 
         should_print_915 = current_time == "09:15" and state["last_print_915"] != today
         should_print_315 = current_time == "15:15" and state["last_print_315"] != today
