@@ -70,12 +70,19 @@ last_actions = {ticker: None for ticker in TICKERS}
 
 # Technical calculations
 def get_historical_data(ticker, period="3mo"):
-    stock_info = yf.Ticker(ticker)
-    history = stock_info.history(period=period)
-    if hasattr(history.index, 'tz'):
-        history.index = history.index.tz_localize(None)
-    return history
-
+    try:
+        stock_info = yf.Ticker(ticker)
+        history = stock_info.history(period=period)
+        if history.empty:
+            print(f"⚠️ {ticker}: possibly delisted; no price data found (period={period})")
+            return None
+        if hasattr(history.index, 'tz'):
+            history.index = history.index.tz_localize(None)
+        return history
+    except Exception as e:
+        print("❌ Error fetching data for %s: %s", ticker, str(e))
+        return None
+    
 def calculate_sma(data, window=20):
     return data['Close'].rolling(window=window).mean()
 
@@ -136,7 +143,7 @@ def get_ist_now():
 
 def main():
     print("✅ trading_loop.py: main() started")
-    print("📊 Loaded TICKERS:", TICKERS)
+    print(f"📊 Loaded TICKERS: {TICKERS}")
 
 
     state = {
@@ -160,7 +167,7 @@ def main():
                 state["last_alive_915"] = today
 
         # Afternoon check (between 15:00 and 15:15)
-        if now_ist.hour == 16 and 20 <= now_ist.minute <= 30:
+        if now_ist.hour == 15 and 0 <= now_ist.minute <= 15:
             if state["last_alive_300"] != today:
                 send_telegram_message("✅ Bot is alive – afternoon check")
                 print("✅ Bot is alive – afternoon check")

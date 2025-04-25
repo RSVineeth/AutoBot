@@ -6,8 +6,6 @@ from trading_loop import main  # import the function
 
 varport = int(os.getenv("PORT", 5000))
 app = Flask(__name__)
-# print("🚀 Starting trading_loop thread")
-# threading.Thread(target=main, daemon=True).start()
 
 @app.route('/', methods=['GET', 'HEAD'])
 def home():
