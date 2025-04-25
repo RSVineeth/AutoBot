@@ -160,7 +160,7 @@ def main():
                 state["last_alive_915"] = today
 
         # Afternoon check (between 15:00 and 15:15)
-        if now_ist.hour == 15 and 0 <= now_ist.minute <= 15:
+        if now_ist.hour == 16 and 15 <= now_ist.minute <= 30:
             if state["last_alive_300"] != today:
                 send_telegram_message("✅ Bot is alive – afternoon check")
                 print("✅ Bot is alive – afternoon check")
@@ -250,7 +250,7 @@ def main():
         should_print_315 = current_time == "15:15" and state["last_print_315"] != today
 
         if action_changed or should_print_915 or should_print_315:
-            print(f"\n📊 {now_ist.strftime('%Y-%m-%d %H:%M:%S')} — Stock Status")
+            # print(f"\n📊 {now_ist.strftime('%Y-%m-%d %H:%M:%S')} — Stock Status")
             print(tabulate(table_data, headers=[
                 "Ticker", "Current Price", "Entry Price", "20-SMA", "50-SMA",
                 "ATR", "RSI", "Sell Threshold", "Change %", "Action"
