@@ -152,17 +152,20 @@ def main():
         today = now_ist.date()
 
         # Alive checks (within time ranges, once per day)
-        if 9 <= now_ist.hour <= 9 and 15 <= now_ist.minute <= 30:
+        # Morning check (between 09:15 and 09:30)
+        if now_ist.hour == 9 and 15 <= now_ist.minute <= 30:
             if state["last_alive_915"] != today:
                 send_telegram_message("✅ Bot is alive – morning check")
                 print("✅ Bot is alive – morning check")
                 state["last_alive_915"] = today
 
-        if 15 <= now_ist.hour <= 15 and 0 <= now_ist.minute <= 15:
+        # Afternoon check (between 15:00 and 15:15)
+        if now_ist.hour == 15 and 0 <= now_ist.minute <= 15:
             if state["last_alive_300"] != today:
                 send_telegram_message("✅ Bot is alive – afternoon check")
                 print("✅ Bot is alive – afternoon check")
                 state["last_alive_300"] = today
+
 
 
         # Exit on Friday afternoon
