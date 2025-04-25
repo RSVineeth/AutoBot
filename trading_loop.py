@@ -185,24 +185,21 @@ def main():
 
         action_changed = False
         table_data = []
-        bad_tickers = []
+        valid_tickers = []
 
         for ticker in TICKERS:
             if is_upcoming_earnings(ticker):
                 print(f"🚫 {ticker}: Skipped due to earnings")
-                bad_tickers.append(ticker)
                 continue
 
             data = get_historical_data(ticker)
             if data is None or data.empty:
                 print(f"⚠️ {ticker}: No data — removing from tracking")
-                bad_tickers.append(ticker)
                 continue
 
             price = get_stock_price(ticker)
             if not price:
                 print(f"⚠️ {ticker}: No price")
-                bad_tickers.append(ticker)
                 continue
 
             # Sanity check that this ticker is in stock_data
@@ -210,6 +207,9 @@ def main():
                 print(f"❌ {ticker}: Missing in stock_data — skipping")
                 continue
 
+            valid_tickers.append((ticker, data, price))
+
+        for ticker, data, price in valid_tickers:
             sma_20 = calculate_sma(data, 20).iloc[-1]
             sma_50 = calculate_sma(data, 50).iloc[-1]
             atr = calculate_atr(data, 14).iloc[-1]
@@ -270,11 +270,11 @@ def main():
                 f"{change:.2f}%" if change else "N/A", action
             ])
 
-        for ticker in bad_tickers:
-            if ticker in TICKERS:
-                TICKERS.remove(ticker)
-            stock_data.pop(ticker, None)
-            last_actions.pop(ticker, None)
+        # for ticker in bad_tickers:
+        #     if ticker in TICKERS:
+        #         TICKERS.remove(ticker)
+        #     stock_data.pop(ticker, None)
+        #     last_actions.pop(ticker, None)
 
         should_print_915 = current_time == "09:15" and state["last_print_915"] != today
         should_print_315 = current_time == "15:15" and state["last_print_315"] != today
