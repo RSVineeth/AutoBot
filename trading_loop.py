@@ -160,7 +160,7 @@ def main():
                 state["last_alive_915"] = today
 
         # Afternoon check (between 15:00 and 15:15)
-        if now_ist.hour == 16 and 15 <= now_ist.minute <= 30:
+        if now_ist.hour == 16 and 20 <= now_ist.minute <= 30:
             if state["last_alive_300"] != today:
                 send_telegram_message("✅ Bot is alive – afternoon check")
                 print("✅ Bot is alive – afternoon check")
