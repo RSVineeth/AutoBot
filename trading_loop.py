@@ -190,6 +190,7 @@ def main():
         for ticker in TICKERS:
             if is_upcoming_earnings(ticker):
                 print(f"🚫 {ticker}: Skipped due to earnings")
+                bad_tickers.append(ticker)
                 continue
 
             data = get_historical_data(ticker)
@@ -198,6 +199,16 @@ def main():
                 bad_tickers.append(ticker)
                 continue
 
+            price = get_stock_price(ticker)
+            if not price:
+                print(f"⚠️ {ticker}: No price")
+                bad_tickers.append(ticker)
+                continue
+
+            # Sanity check that this ticker is in stock_data
+            if ticker not in stock_data:
+                print(f"❌ {ticker}: Missing in stock_data — skipping")
+                continue
 
             sma_20 = calculate_sma(data, 20).iloc[-1]
             sma_50 = calculate_sma(data, 50).iloc[-1]
@@ -205,9 +216,9 @@ def main():
             rsi = calculate_rsi(data, 14).iloc[-1]
             price = get_stock_price(ticker)
 
-            if not price:
-                print(f"⚠️ {ticker}: No price")
-                continue
+            # if not price:
+            #     print(f"⚠️ {ticker}: No price")
+            #     continue
 
             stock = stock_data[ticker]
             change = None
@@ -260,7 +271,8 @@ def main():
             ])
 
         for ticker in bad_tickers:
-            TICKERS.remove(ticker)
+            if ticker in TICKERS:
+                TICKERS.remove(ticker)
             stock_data.pop(ticker, None)
             last_actions.pop(ticker, None)
 
