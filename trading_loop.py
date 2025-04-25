@@ -189,7 +189,7 @@ def main():
                 continue
 
             data = get_historical_data(ticker)
-            if data.empty:
+            if data is None or data.empty:
                 print(f"⚠️ {ticker}: No data")
                 continue
 
