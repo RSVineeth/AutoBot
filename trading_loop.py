@@ -16,9 +16,11 @@ import logging
 
 # Setup logging to stdout with timestamps
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-logging.getLogger("yfinance").setLevel(logging.WARNING)
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("yfinance").disabled = True
+
 # Optional: Replace print with logging if preferred
 print = logging.info
 
