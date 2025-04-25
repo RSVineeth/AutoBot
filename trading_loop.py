@@ -190,8 +190,12 @@ def main():
 
             data = get_historical_data(ticker)
             if data is None or data.empty:
-                print(f"⚠️ {ticker}: No data")
+                print(f"⚠️ {ticker}: No data — removing {ticker} from TICKERS")
+                TICKERS.remove(ticker)
+                stock_data.pop(ticker, None)
+                last_actions.pop(ticker, None)
                 continue
+
 
             sma_20 = calculate_sma(data, 20).iloc[-1]
             sma_50 = calculate_sma(data, 50).iloc[-1]
