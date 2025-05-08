@@ -34,13 +34,17 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 def send_telegram_message(message):
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    data = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
-    response = requests.post(url, data=data)
-    if response.status_code == 200:
-        print("📨 Telegram message sent")
-    else:
-        print("❌ Telegram message failed", response.text)
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        data = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
+        response = requests.post(url, data=data)
+        if response.status_code == 200:
+            print("📨 Telegram message sent")
+        else:
+            print("❌ Telegram message failed", response.text)
+    except Exception as e:
+        logging.exception("❌ Error sending Telegram message")
+
 
 # Settings
 # TICKERS = [
@@ -72,6 +76,37 @@ stock_data = {
     for ticker in TICKERS
 }
 last_actions = {ticker: None for ticker in TICKERS}
+
+# Add these functions near your existing technical calculations
+
+def get_52_week_high(data):
+    one_year_ago = data.index[-1] - pd.DateOffset(days=365)
+    past_year_data = data[data.index >= one_year_ago]
+    return past_year_data['High'].max()
+
+
+def is_volume_spike(data, multiplier=1.5):
+    avg_volume = data['Volume'].rolling(window=20).mean().iloc[-1]
+    return data['Volume'].iloc[-1] >= multiplier * avg_volume
+
+def is_rsi_in_range(data, lower=55, upper=70):
+    rsi = calculate_rsi(data, window=14).iloc[-1]
+    return lower <= rsi <= upper
+
+def is_price_above_moving_averages(data, price):
+    sma_50 = calculate_sma(data, window=50).iloc[-1]
+    sma_200 = calculate_sma(data, window=200).iloc[-1]
+    return price > sma_50 and price > sma_200
+
+# Placeholder – to be implemented or mocked
+def check_recent_positive_news(ticker):
+    # Replace this with actual news API or data source
+    return False
+
+def is_sector_strong(ticker):
+    # Replace this with peer/sector index comparison logic
+    return False
+
 
 # Technical calculations
 def get_historical_data(ticker, period="3mo"):
@@ -216,7 +251,7 @@ def main():
             sma_50 = calculate_sma(data, 50).iloc[-1]
             atr = calculate_atr(data, 14).iloc[-1]
             rsi = calculate_rsi(data, 14).iloc[-1]
-            price = get_stock_price(ticker)
+            # price = get_stock_price(ticker)
 
             # if not price:
             #     print(f"⚠️ {ticker}: No price")
@@ -249,15 +284,63 @@ def main():
                 change = ((price - stock["entry_price"]) / stock["entry_price"]) * 100
 
             # Sell logic
-            if stock["holdings"] > 0 and price <= stock["sell_threshold"]:
-                msg = (
-                    f"🔴 {ticker}: Sold {stock['holdings']} shares @ {price:.2f}\n"
-                    f"Entry: {stock['entry_price']:.2f}, Change: {change:.2f}%\n"
-                    f"Stop loss: {stock['sell_threshold']:.2f}"
-                )
-                print(msg)
-                send_telegram_message(msg)
-                stock.update({"holdings": 0, "entry_price": None, "sell_threshold": None, "highest_price": None})
+            # if stock["holdings"] > 0 and price <= stock["sell_threshold"]:
+            #     msg = (
+            #         f"🔴 {ticker}: Sold {stock['holdings']} shares @ {price:.2f}\n"
+            #         f"Entry: {stock['entry_price']:.2f}, Change: {change:.2f}%\n"
+            #         f"Stop loss: {stock['sell_threshold']:.2f}"
+            #     )
+            #     print(msg)
+            #     send_telegram_message(msg)
+            #     stock.update({"holdings": 0, "entry_price": None, "sell_threshold": None, "highest_price": None})
+
+            # Enhanced Sell logic with detailed reasoning
+            if stock["holdings"] > 0:
+                reason = ""
+                sell_now = False
+
+                if price <= stock["sell_threshold"]:
+                    reason = f"Hit stop loss at {price:.2f} (threshold: {stock['sell_threshold']:.2f})"
+                    sell_now = True
+
+                elif price >= get_52_week_high(data):
+                    vol_check = is_volume_spike(data)
+                    rsi_check = is_rsi_in_range(data)
+                    ma_check = is_price_above_moving_averages(data, price)
+                    news_check = check_recent_positive_news(ticker)
+                    sector_check = is_sector_strong(ticker)
+
+                    checks = {
+                        "Volume Spike": vol_check,
+                        "RSI (55–70)": rsi_check,
+                        "Above 50/200 SMA": ma_check,
+                        "Positive News": news_check,
+                        "Sector Strength": sector_check
+                    }
+
+                    if all(checks.values()):
+                        reason = f"📈 52-week high {price:.2f} reached — strong indicators suggest further upside. Holding."
+                        print(reason)
+                        send_telegram_message(reason)
+                    else:
+                        failed_checks = [k for k, v in checks.items() if not v]
+                        reason = (
+                            f"🔻 Reached 52-week high at {price:.2f} — Weak indicators ({', '.join(failed_checks)}). "
+                            f"Selling to lock gains."
+                        )
+                        sell_now = True
+
+                if sell_now:
+                    change = ((price - stock["entry_price"]) / stock["entry_price"]) * 100
+                    msg = (
+                        f"🔴 {ticker}: Sold {stock['holdings']} shares @ {price:.2f}\n"
+                        f"Entry: {stock['entry_price']:.2f}, Change: {change:.2f}%\n"
+                        f"Reason: {reason}"
+                    )
+                    print(msg)
+                    send_telegram_message(msg)
+                    stock.update({"holdings": 0, "entry_price": None, "sell_threshold": None, "highest_price": None})
+
 
             action = "HOLD" if stock["holdings"] > 0 else "WAIT"
             if last_actions[ticker] != action:
