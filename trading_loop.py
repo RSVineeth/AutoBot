@@ -67,7 +67,9 @@ stock_data = {
         "entry_price": None,
         "holdings": 0,
         "sell_threshold": None,
-        "highest_price": None
+        "highest_price": None,
+        "notified_52w_high": False
+
     }
     for ticker in TICKERS
 }
@@ -88,6 +90,17 @@ def get_historical_data(ticker, period="3mo"):
         print(f"❌ {ticker}: Error fetching data: {e}")
         return None
     
+def get_annual_high(ticker):
+    try:
+        hist = yf.Ticker(ticker).history(period="1y")
+        if hist.empty:
+            return None
+        return hist["High"].max()
+    except Exception as e:
+        print(f"❌ {ticker}: Error fetching 52-week high: {e}")
+        return None
+
+
 def calculate_sma(data, window=20):
     return data['Close'].rolling(window=window).mean()
 
@@ -105,7 +118,7 @@ def calculate_rsi(data, window=14):
     delta = data['Close'].diff()
     gain = delta.where(delta > 0, 0).rolling(window=window).mean()
     loss = -delta.where(delta < 0, 0).rolling(window=window).mean()
-    rs = gain / loss
+    rs = gain / loss.replace(0, 1e-10)  # Prevent division by zero
     return 100 - (100 / (1 + rs))
 
 def check_volume_spike(data, multiplier=1.5):
@@ -128,9 +141,9 @@ def is_upcoming_earnings(ticker):
     date = get_next_earnings_date(ticker)
     return date and datetime.now().date() <= date.date() <= (datetime.now() + timedelta(days=2)).date()
 
-def is_friday_exit_time():
-    now = datetime.now()
-    return now.weekday() == 4 and now.hour == 15 and now.minute >= 20
+# def is_friday_exit_time():
+#     now = datetime.now()
+#     return now.weekday() == 4 and now.hour == 15 and now.minute >= 20
 
 def close_all_positions():
     for ticker, stock in stock_data.items():
@@ -141,7 +154,8 @@ def close_all_positions():
                 msg = f"📤 {ticker}: Weekend exit - Sold {stock['holdings']} @ {price:.2f}\nEntry: {stock['entry_price']:.2f}, Change: {change:.2f}%"
                 print(msg)
                 send_telegram_message(msg)
-            stock.update({"holdings": 0, "entry_price": None, "sell_threshold": None, "highest_price": None})
+            stock.update({"holdings": 0, "entry_price": None, "sell_threshold": None, "highest_price": None, "notified_52w_high": False
+})
 
 def get_ist_now():
     return datetime.now(pytz.timezone("Asia/Kolkata"))
@@ -181,9 +195,9 @@ def main():
 
 
         # Exit on Friday afternoon
-        if is_friday_exit_time():
-            print("📆 Friday 3:20 PM – Closing all positions")
-            close_all_positions()
+        # if is_friday_exit_time():
+        #     print("📆 Friday 3:20 PM – Closing all positions")
+        #     close_all_positions()
 
         action_changed = False
         table_data = []
@@ -216,7 +230,7 @@ def main():
             sma_50 = calculate_sma(data, 50).iloc[-1]
             atr = calculate_atr(data, 14).iloc[-1]
             rsi = calculate_rsi(data, 14).iloc[-1]
-            price = get_stock_price(ticker)
+            # price = get_stock_price(ticker)
 
             # if not price:
             #     print(f"⚠️ {ticker}: No price")
@@ -247,6 +261,19 @@ def main():
                     stock["highest_price"] - ATR_MULTIPLIER * atr
                 )
                 change = ((price - stock["entry_price"]) / stock["entry_price"]) * 100
+
+            # Check for annual high
+            annual_high = get_annual_high(ticker)
+            if stock["holdings"] > 0 and annual_high and abs(price - annual_high) < 0.5:
+                if not stock.get("notified_52w_high", False):
+                    msg = (
+                        f"📈 {ticker} has reached its 52-week high at {price:.2f}.\n"
+                        f"Entry: {stock['entry_price']:.2f}, Change: {change:.2f}%\n"
+                        f"Would you like to SELL or HOLD?"
+                    )
+                    print(msg)
+                    send_telegram_message(msg)
+                    stock["notified_52w_high"] = True
 
             # Sell logic
             if stock["holdings"] > 0 and price <= stock["sell_threshold"]:
