@@ -29,7 +29,7 @@ print = logging.info
 # Telegram config
 
 # TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
-# TELEGRAM_CHAT_ID = '1012793457'
+# TELEGRAM_CHAT_ID = '1012793457','1209666577'
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
@@ -39,7 +39,7 @@ def send_telegram_message(message):
     for chat_id in chat_ids:
         chat_id = chat_id.strip()
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        data = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
+        data = {"chat_id": chat_id, "text": message}
         response = requests.post(url, data=data)
         if response.status_code == 200:
             print("📨 Telegram message sent")
