@@ -34,7 +34,7 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 def send_telegram_message(message):
-    chat_ids = TELEGRAM_CHAT_IDS.split(",")
+    chat_ids = TELEGRAM_CHAT_ID.split(",")
 
     for chat_id in chat_ids:
         chat_id = chat_id.strip()
