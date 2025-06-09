@@ -6,8 +6,4 @@ yfinance
 twilio
 requests
 gunicorn
-time
-ta.trend
-datetime
-os
-threading
+ta
