@@ -1,11 +1,14 @@
 import yfinance as yf
 import time
 import pandas as pd
+from ta.trend import ADXIndicator
 from datetime import datetime, timedelta
 from tabulate import tabulate
 import requests
 import pytz
 import os
+import threading
+
 # import builtins
 # _original_print = print
 # def autoflush_print(*args, **kwargs):
@@ -29,12 +32,14 @@ print = logging.info
 # Telegram config
 
 # TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
-# TELEGRAM_CHAT_ID = ['1012793457','1209666577']
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+TELEGRAM_CHAT_ID = '1012793457' ,'1209666577'
+TELEGRAM_CHAT_ID = ['1012793457','1209666577']
+
+# TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+# TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 def send_telegram_message(message):
-    # chat_ids = TELEGRAM_CHAT_ID.split(",")
+    # chat_ids = TELEGRAM_CHAT_ID.split(",") # remove when locally tested
 
     for chat_id in TELEGRAM_CHAT_ID:
         chat_id = chat_id.strip()
@@ -46,14 +51,28 @@ def send_telegram_message(message):
         else:
             print("❌ Telegram message failed", response.text)
 
-# Settings
-# TICKERS = [
-#     "FILATFASH.NS", "SRESTHA.BO", "HARSHILAGR.BO", "GTLINFRA.NS", "ITC.NS",
-#     "OBEROIRLTY.NS", "JAMNAAUTO.NS", "KSOLVES.NS", "ADANIGREEN.NS",
-#     "TATAMOTORS.NS", "OLECTRA.NS", "ARE&M.NS", "AFFLE.NS", "BEL.NS",
-#     "SUNPHARMA.NS", "LAURUSLABS.NS", "RELIANCE.NS", "KRBL.NS", "ONGC.NS",
-#     "IDFCFIRSTB.NS", "BANKBARODA.NS", "GSFC.NS", "TCS.NS", "INFY.NS"
-# ]
+# # Settings
+TICKERS = [
+    "FILATFASH.NS", "SRESTHA.BO", "HARSHILAGR.BO", "GTLINFRA.NS", "ITC.NS",
+    "OBEROIRLTY.NS", "JAMNAAUTO.NS", "KSOLVES.NS", "ADANIGREEN.NS",
+    "TATAMOTORS.NS", "OLECTRA.NS", "ARE&M.NS", "AFFLE.NS", "BEL.NS",
+    "SUNPHARMA.NS", "LAURUSLABS.NS", "RELIANCE.NS", "KRBL.NS", "ONGC.NS",
+    "IDFCFIRSTB.NS", "BANKBARODA.NS", "GSFC.NS", "TCS.NS", "INFY.NS",
+    "SVARTCORP.BO", "SWASTIVI.BO", "BTML.NS", "SULABEN.BO", "CRYSTAL.BO",
+    "TILAK.BO", "COMFINTE.BO", "COCHINSHIP.NS", "RVNL.NS", "SHAILY.NS", "BDL.NS", 
+    "JYOTICNC.NS",  "NATIONALUM.NS", "KRONOX.NS", "SAKSOFT.NS", "ARIHANTCAP.NS",
+    "GEOJITFSL.NS", "GRAUWEIL.BO", "MCLOUD.NS", "LKPSEC.BO", "TARACHAND.NS",
+    "CENTEXT.NS", "IRISDOREME.NS", "BLIL.BO", "RNBDENIMS.BO", "ONEPOINT.NS",
+    "SONAMLTD.NS", "GATEWAY.NS", "RSYSTEMS.BO", "INDRAMEDCO.NS",
+    "JYOTHYLAB.NS", "FCL.NS", "MANINFRA.NS", "GPIL.NS", "JAGSNPHARM.NS",
+    "HSCL.NS", "JWL.NS", "BSOFT.NS", "MARKSANS.NS", "TALBROAUTO.NS",
+    "GALLANTT.NS", "RESPONIND.NS", "IRCTC.NS", "NAM-INDIA.NS", "MONARCH.NS",
+    "ELECON.NS", "SHANTIGEAR.NS", "JASH.NS", "GARFIBRES.NS", "VISHNU.NS",
+    "GRSE.NS", "RITES.NS", "AEGISLOG.NS", "ZENTEC.NS", "DELHIVERY.NS",
+    "IFCI.NS", "CDSL.NS", "NUVAMA.NS", "NEULANDLAB.NS", "GODFRYPHLP.NS",
+    "BAJAJHFL.NS", "PIDILITIND.NS", "HBLENGINE.NS", "DLF.NS", "RKFORGE.NS"
+]
+
 
 tickers_str = os.getenv("TICKERS")
 TICKERS = tickers_str.split(",") if tickers_str else []
@@ -78,6 +97,74 @@ stock_data = {
     for ticker in TICKERS
 }
 last_actions = {ticker: None for ticker in TICKERS}
+
+def telegram_listener():
+    print("👂 Telegram listener started")
+    last_update_id = None
+    while True:
+        try:
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates"
+            if last_update_id:
+                url += f"?offset={last_update_id + 1}"
+
+            response = requests.get(url).json()
+
+            if "result" in response:
+                for update in response["result"]:
+                    last_update_id = update["update_id"]
+                    if "message" in update and "text" in update["message"]:
+                        ticker_input = update["message"]["text"].strip().upper()
+                        if ticker_input in TICKERS:
+                            print_ticker_table(ticker_input)
+                        else:
+                            send_telegram_message(f"❌ Unknown ticker: {ticker_input}")
+
+        except Exception as e:
+            print(f"⚠️ Telegram listener error: {e}")
+        time.sleep(5)
+
+def print_ticker_table(ticker):
+    stock = stock_data.get(ticker)
+    if not stock:
+        print(f"⚠️ {ticker} not in stock_data")
+        return
+
+    data = get_historical_data(ticker)
+    if data is None or data.empty:
+        print(f"⚠️ No data for {ticker}")
+        return
+
+    price = get_stock_price(ticker)
+    if not price:
+        print(f"⚠️ No price for {ticker}")
+        return
+
+    adx = calculate_adx(data).iloc[-1]
+    ema_20 = calculate_ema(data, 20).iloc[-1]
+    sma_20 = calculate_sma(data, 20).iloc[-1]
+    sma_50 = calculate_sma(data, 50).iloc[-1]
+    atr = calculate_atr(data, 14).iloc[-1]
+    rsi = calculate_rsi(data, 14).iloc[-1]
+    macd_line, signal_line, macd_hist = calculate_macd(data)
+    macd_current = macd_line.iloc[-1]
+    signal_current = signal_line.iloc[-1]
+    change = ((price - stock["entry_price"]) / stock["entry_price"]) * 100 if stock["entry_price"] else None
+
+    table_data = [[
+        ticker, f"{price:.2f}",
+        f"{stock['entry_price']:.2f}" if stock['entry_price'] else "N/A",
+        f"{ema_20:.2f}", f"{sma_20:.2f}", f"{sma_50:.2f}", f"{macd_current:.2f}", f"{signal_current:.2f}",
+        f"{atr:.2f}", f"{rsi:.2f}", f"{adx:.2f}",
+        f"{stock['sell_threshold']:.2f}" if stock['sell_threshold'] else "N/A",
+        f"{change:.2f}%" if change else "N/A",
+        "HOLD" if stock['holdings'] > 0 else "WAIT"
+    ]]
+
+    print(tabulate(table_data, headers=[
+        "Ticker", "Current Price", "Entry Price", "20-EMA", "20-SMA", "50-SMA", "MACD", "Signal",
+        "ATR", "RSI", "ADX", "Sell Threshold", "Change %", "Action"
+    ], tablefmt="grid"))
+
 
 # Technical calculations
 def get_historical_data(ticker, period="3mo"):
@@ -124,6 +211,19 @@ def calculate_rsi(data, window=14):
     loss = -delta.where(delta < 0, 0).rolling(window=window).mean()
     rs = gain / loss.replace(0, 1e-10)  # Prevent division by zero
     return 100 - (100 / (1 + rs))
+
+def calculate_macd(data, fast=12, slow=26, signal=9):
+    exp1 = data['Close'].ewm(span=fast, adjust=False).mean()
+    exp2 = data['Close'].ewm(span=slow, adjust=False).mean()
+    macd_line = exp1 - exp2
+    signal_line = macd_line.ewm(span=signal, adjust=False).mean()
+    histogram = macd_line - signal_line
+    return macd_line, signal_line, histogram
+
+def calculate_adx(data, window=14):
+    adx = ADXIndicator(high=data["High"], low=data["Low"], close=data["Close"], window=window)
+    return adx.adx()
+
 
 def check_volume_spike(data, multiplier=1.5):
     return data['Volume'].iloc[-1] > multiplier * data['Volume'].rolling(20).mean().iloc[-1]
@@ -177,6 +277,7 @@ def main():
     }
 
     while True:
+        threading.Thread(target=telegram_listener, daemon=True).start()
         now_ist = get_ist_now()
         current_time = now_ist.strftime("%H:%M")
         today = now_ist.date()
@@ -230,6 +331,8 @@ def main():
             valid_tickers.append((ticker, data, price))
 
         for ticker, data, price in valid_tickers:
+            adx = calculate_adx(data).iloc[-1]
+            ema_20 = calculate_ema(data, 20).iloc[-1]
             sma_20 = calculate_sma(data, 20).iloc[-1]
             sma_50 = calculate_sma(data, 50).iloc[-1]
             atr = calculate_atr(data, 14).iloc[-1]
@@ -243,16 +346,21 @@ def main():
             stock = stock_data[ticker]
             change = None
 
+            macd_line, signal_line, macd_hist = calculate_macd(data)
+            macd_current = macd_line.iloc[-1]
+            signal_current = signal_line.iloc[-1]
+
+
             # Buy logic
-            if stock["holdings"] == 0 and sma_20 > sma_50 and rsi < RSI_OVERBOUGHT:
-                if rsi > RSI_OVERSOLD:
+            if stock["holdings"] == 0 and ema_20 > sma_50 and rsi < RSI_OVERBOUGHT and adx > 20:
+                if rsi > RSI_OVERSOLD and macd_current > signal_current:
                     stock.update({
                         "entry_price": price,
                         "holdings": SHARES_TO_BUY,
                         "sell_threshold": price - (ATR_MULTIPLIER * atr),
                         "highest_price": price
                     })
-                    msg = f"🟢 {ticker} - {price:.2f}, Bought {SHARES_TO_BUY} shares"
+                    msg = f"🟢 {ticker} - {price:.2f}, ATR - {atr:.2f}, Sell Threshold - {price - (ATR_MULTIPLIER * atr):.2f}"
                     print(msg)
                     send_telegram_message(msg)
 
@@ -282,7 +390,7 @@ def main():
             # Sell logic
             if stock["holdings"] > 0 and price <= stock["sell_threshold"]:
                 msg = (
-                    f"🔴 {ticker}: Sold {stock['holdings']} shares @ {price:.2f}\n"
+                    f"🔴 {ticker}: Sold shares at {price:.2f}\n"
                     f"Entry: {stock['entry_price']:.2f}, Change: {change:.2f}%\n"
                     f"Stop loss: {stock['sell_threshold']:.2f}"
                 )
@@ -298,7 +406,8 @@ def main():
             table_data.append([
                 ticker, f"{price:.2f}",
                 f"{stock['entry_price']:.2f}" if stock['entry_price'] else "N/A",
-                f"{sma_20:.2f}", f"{sma_50:.2f}", f"{atr:.2f}", f"{rsi:.2f}",
+                f"{ema_20:.2f}", f"{sma_20:.2f}", f"{sma_50:.2f}", f"{atr:.2f}", f"{rsi:.2f}",
+                f"{macd_current:.2f}", f"{signal_current:.2f}", f"{adx:.2f}", 
                 f"{stock['sell_threshold']:.2f}" if stock['sell_threshold'] else "N/A",
                 f"{change:.2f}%" if change else "N/A", action
             ])
@@ -315,8 +424,8 @@ def main():
         if action_changed or should_print_915 or should_print_315:
             # print(f"\n📊 {now_ist.strftime('%Y-%m-%d %H:%M:%S')} — Stock Status")
             print(tabulate(table_data, headers=[
-                "Ticker", "Current Price", "Entry Price", "20-SMA", "50-SMA",
-                "ATR", "RSI", "Sell Threshold", "Change %", "Action"
+                "Ticker", "Current Price", "Entry Price", "20-EMA", "20-SMA", "50-SMA", "MACD", "Signal",
+                "ATR", "RSI", "ADX", "Sell Threshold", "Change %", "Action"
             ], tablefmt="grid"))
 
             if should_print_915:
