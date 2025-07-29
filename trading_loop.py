@@ -55,6 +55,8 @@ def send_telegram_message(message):
 #     "IDFCFIRSTB.NS", "BANKBARODA.NS", "GSFC.NS", "TCS.NS", "INFY.NS"
 # ]
 
+# need to add more
+
 tickers_str = os.getenv("TICKERS")
 TICKERS = tickers_str.split(",") if tickers_str else []
 
