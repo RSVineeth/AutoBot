@@ -14,6 +14,7 @@ import atexit
 import signal
 import sys
 import logging
+import os
 
 warnings.filterwarnings('ignore')
 
@@ -45,12 +46,17 @@ logging.getLogger("yfinance").disabled = True
 # ============================
 
 # Telegram Configuration
-TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
-TELEGRAM_CHAT_ID = ['1012793457','1209666577']
+# TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
+# TELEGRAM_CHAT_ID = ['1012793457','1209666577']
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # Trading Configuration
-TICKERS = ['RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ITC.NS', 
-           'BHARTIARTL.NS', 'SBIN.NS', 'LT.NS', 'HCLTECH.NS', 'WIPRO.NS']
+# TICKERS = ['RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ITC.NS', 
+#            'BHARTIARTL.NS', 'SBIN.NS', 'LT.NS', 'HCLTECH.NS', 'WIPRO.NS']
+
+tickers_str = os.getenv("TICKERS")
+TICKERS = tickers_str.split(",") if tickers_str else []
 
 CHECK_INTERVAL = 60 * 5  # 5 minutes
 SHARES_TO_BUY = 2
@@ -137,8 +143,9 @@ def send_telegram_message(message: str):
     if not TELEGRAM_BOT_TOKEN or TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
         logger.info(f"[TELEGRAM] {message}")
         return
-    
-    for chat_id in TELEGRAM_CHAT_ID:
+    chat_ids = TELEGRAM_CHAT_ID.split(",") # remove when locally tested
+
+    for chat_id in chat_ids:
         try:
             url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
             data = {
