@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.13-slim
 
 # Install system dependencies for TA-Lib
 RUN apt-get update && apt-get install -y \
@@ -23,13 +23,14 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
 
 # Expose port (if needed for web interface)
-EXPOSE 10000
+EXPOSE 5000
 
 # Run the application
-CMD ["python", "trading_loop.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
