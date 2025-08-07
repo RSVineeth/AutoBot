@@ -6,4 +6,6 @@ yfinance
 twilio
 requests
 gunicorn
-ta
+TA-Lib
+numpy
+schedule

@@ -1,5 +1,3 @@
-# same as trading_loop.py
-
 import yfinance as yf
 import time
 import pandas as pd
@@ -10,14 +8,7 @@ import requests
 import pytz
 import os
 import threading
-
-# import builtins
-# _original_print = print
-# def autoflush_print(*args, **kwargs):
-#     return _original_print(*args, flush=True, **kwargs)
-# builtins.print = autoflush_print
 import logging
-
 
 # Setup logging to stdout with timestamps
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -29,20 +20,12 @@ logging.getLogger("yfinance").disabled = True
 # Optional: Replace print with logging if preferred
 print = logging.info
 
-
-
 # Telegram config
-
 TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
-TELEGRAM_CHAT_ID = '1012793457'
-# ,'1209666577'
-# TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-# TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+TELEGRAM_CHAT_ID = ['1012793457','1209666577']
 
 def send_telegram_message(message):
-    chat_ids = TELEGRAM_CHAT_ID.split(",")
-
-    for chat_id in chat_ids:
+    for chat_id in TELEGRAM_CHAT_ID:
         chat_id = chat_id.strip()
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
         data = {"chat_id": chat_id, "text": message}
@@ -59,19 +42,15 @@ TICKERS = [
     "TATAMOTORS.NS", "OLECTRA.NS", "ARE&M.NS", "AFFLE.NS", "BEL.NS",
     "SUNPHARMA.NS", "LAURUSLABS.NS", "RELIANCE.NS", "KRBL.NS", "ONGC.NS",
     "IDFCFIRSTB.NS", "BANKBARODA.NS", "GSFC.NS", "TCS.NS", "INFY.NS"
-    "SVARTCORP.BO", "SWASTIVI.BO", "BTML.NS", "SULABEN.BO", "CRYSTAL.BO", 
-    "TILAK.BO", "COMFINTE.BO"
 ]
-
-# tickers_str = os.getenv("TICKERS")
-# TICKERS = tickers_str.split(",") if tickers_str else []
-
 
 SHARES_TO_BUY = 2
 CHECK_INTERVAL = 60 * 5
 ATR_MULTIPLIER = 1.5
 RSI_OVERBOUGHT = 70
 RSI_OVERSOLD = 30
+VOLUME_SPIKE_MULTIPLIER = 1.5
+BREAKOUT_WINDOW = 5
 
 # Memory
 stock_data = {
@@ -81,7 +60,6 @@ stock_data = {
         "sell_threshold": None,
         "highest_price": None,
         "notified_52w_high": False
-
     }
     for ticker in TICKERS
 }
@@ -137,6 +115,8 @@ def print_ticker_table(ticker):
     macd_line, signal_line, macd_hist = calculate_macd(data)
     macd_current = macd_line.iloc[-1]
     signal_current = signal_line.iloc[-1]
+    volume_spike = check_volume_spike(data, VOLUME_SPIKE_MULTIPLIER)
+    breakout = check_breakout(data, BREAKOUT_WINDOW)
     change = ((price - stock["entry_price"]) / stock["entry_price"]) * 100 if stock["entry_price"] else None
 
     table_data = [[
@@ -144,6 +124,7 @@ def print_ticker_table(ticker):
         f"{stock['entry_price']:.2f}" if stock['entry_price'] else "N/A",
         f"{ema_20:.2f}", f"{sma_20:.2f}", f"{sma_50:.2f}", f"{macd_current:.2f}", f"{signal_current:.2f}",
         f"{atr:.2f}", f"{rsi:.2f}", f"{adx:.2f}",
+        "✅" if volume_spike else "❌", "✅" if breakout else "❌",
         f"{stock['sell_threshold']:.2f}" if stock['sell_threshold'] else "N/A",
         f"{change:.2f}%" if change else "N/A",
         "HOLD" if stock['holdings'] > 0 else "WAIT"
@@ -151,9 +132,8 @@ def print_ticker_table(ticker):
 
     print(tabulate(table_data, headers=[
         "Ticker", "Current Price", "Entry Price", "20-EMA", "20-SMA", "50-SMA", "MACD", "Signal",
-        "ATR", "RSI", "ADX", "Sell Threshold", "Change %", "Action"
+        "ATR", "RSI", "ADX", "Vol Spike", "Breakout", "Sell Threshold", "Change %", "Action"
     ], tablefmt="grid"))
-
 
 # Technical calculations
 def get_historical_data(ticker, period="3mo"):
@@ -179,7 +159,6 @@ def get_annual_high(ticker):
     except Exception as e:
         print(f"❌ {ticker}: Error fetching 52-week high: {e}")
         return None
-
 
 def calculate_sma(data, window=20):
     return data['Close'].rolling(window=window).mean()
@@ -213,12 +192,22 @@ def calculate_adx(data, window=14):
     adx = ADXIndicator(high=data["High"], low=data["Low"], close=data["Close"], window=window)
     return adx.adx()
 
-
+# NEW: Volume and Breakout Analysis Functions
 def check_volume_spike(data, multiplier=1.5):
-    return data['Volume'].iloc[-1] > multiplier * data['Volume'].rolling(20).mean().iloc[-1]
+    """Check if current volume is significantly higher than average"""
+    if len(data) < 20:
+        return False
+    current_volume = data['Volume'].iloc[-1]
+    avg_volume = data['Volume'].rolling(20).mean().iloc[-1]
+    return current_volume > multiplier * avg_volume
 
 def check_breakout(data, window=5):
-    return data['Close'].iloc[-1] > data['High'].rolling(window).max().iloc[-2]
+    """Check if current price breaks above recent high"""
+    if len(data) < window + 1:
+        return False
+    recent_high = data['High'].rolling(window).max().iloc[-2]
+    current_close = data['Close'].iloc[-1]
+    return current_close > recent_high
 
 def get_stock_price(ticker):
     data = yf.Ticker(ticker).history(period="1d", interval="1m")
@@ -234,9 +223,9 @@ def is_upcoming_earnings(ticker):
     date = get_next_earnings_date(ticker)
     return date and datetime.now().date() <= date.date() <= (datetime.now() + timedelta(days=2)).date()
 
-# def is_friday_exit_time():
-#     now = datetime.now()
-#     return now.weekday() == 4 and now.hour == 15 and now.minute >= 20
+def is_friday_exit_time():
+    now = datetime.now()
+    return now.weekday() == 4 and now.hour == 15 and now.minute >= 20
 
 def close_all_positions():
     for ticker, stock in stock_data.items():
@@ -247,16 +236,14 @@ def close_all_positions():
                 msg = f"📤 {ticker}: Weekend exit - Sold {stock['holdings']} @ {price:.2f}\nEntry: {stock['entry_price']:.2f}, Change: {change:.2f}%"
                 print(msg)
                 send_telegram_message(msg)
-            stock.update({"holdings": 0, "entry_price": None, "sell_threshold": None, "highest_price": None, "notified_52w_high": False
-})
+            stock.update({"holdings": 0, "entry_price": None, "sell_threshold": None, "highest_price": None, "notified_52w_high": False})
 
 def get_ist_now():
     return datetime.now(pytz.timezone("Asia/Kolkata"))
 
 def main():
-    print("✅ trading_loop.py: main() started")
+    print("✅ Enhanced trading_loop.py: main() started")
     print(f"📊 Loaded TICKERS: {TICKERS}")
-
 
     state = {
         "last_alive_915": None,
@@ -272,26 +259,22 @@ def main():
         today = now_ist.date()
 
         # Alive checks (within time ranges, once per day)
-        # Morning check (between 09:15 and 09:30)
         if now_ist.hour == 9 and 15 <= now_ist.minute <= 30:
             if state["last_alive_915"] != today:
                 send_telegram_message("✅ Bot is alive – morning check")
                 print("✅ Bot is alive – morning check")
                 state["last_alive_915"] = today
 
-        # Afternoon check (between 15:00 and 15:15)
         if now_ist.hour == 15 and 0 <= now_ist.minute <= 15:
             if state["last_alive_300"] != today:
                 send_telegram_message("✅ Bot is alive – afternoon check")
                 print("✅ Bot is alive – afternoon check")
                 state["last_alive_300"] = today
 
-
-
-        # Exit on Friday afternoon
-        # if is_friday_exit_time():
-        #     print("📆 Friday 3:20 PM – Closing all positions")
-        #     close_all_positions()
+        # Friday exit logic
+        if is_friday_exit_time():
+            print("📆 Friday 3:20 PM – Closing all positions")
+            close_all_positions()
 
         action_changed = False
         table_data = []
@@ -312,7 +295,6 @@ def main():
                 print(f"⚠️ {ticker}: No price")
                 continue
 
-            # Sanity check that this ticker is in stock_data
             if ticker not in stock_data:
                 print(f"❌ {ticker}: Missing in stock_data — skipping")
                 continue
@@ -326,11 +308,10 @@ def main():
             sma_50 = calculate_sma(data, 50).iloc[-1]
             atr = calculate_atr(data, 14).iloc[-1]
             rsi = calculate_rsi(data, 14).iloc[-1]
-            # price = get_stock_price(ticker)
-
-            # if not price:
-            #     print(f"⚠️ {ticker}: No price")
-            #     continue
+            
+            # NEW: Volume and breakout analysis
+            volume_spike = check_volume_spike(data, VOLUME_SPIKE_MULTIPLIER)
+            breakout = check_breakout(data, BREAKOUT_WINDOW)
 
             stock = stock_data[ticker]
             change = None
@@ -339,19 +320,32 @@ def main():
             macd_current = macd_line.iloc[-1]
             signal_current = signal_line.iloc[-1]
 
-
-            # Buy logic
+            # ENHANCED Buy logic with volume and breakout confirmation
             if stock["holdings"] == 0 and ema_20 > sma_50 and rsi < RSI_OVERBOUGHT and adx > 20:
                 if rsi > RSI_OVERSOLD and macd_current > signal_current:
-                    stock.update({
-                        "entry_price": price,
-                        "holdings": SHARES_TO_BUY,
-                        "sell_threshold": price - (ATR_MULTIPLIER * atr),
-                        "highest_price": price
-                    })
-                    msg = f"🟢 {ticker} - {price:.2f}, ATR - {atr:.2f}, Sell Threshold - {price - (ATR_MULTIPLIER * atr):.2f}"
-                    print(msg)
-                    send_telegram_message(msg)
+                    # NEW: Additional confirmation from volume spike OR breakout
+                    if volume_spike or breakout:
+                        stock.update({
+                            "entry_price": price,
+                            "holdings": SHARES_TO_BUY,
+                            "sell_threshold": price - (ATR_MULTIPLIER * atr),
+                            "highest_price": price
+                        })
+                        
+                        # Enhanced buy message with confirmation signals
+                        confirmations = []
+                        if volume_spike:
+                            confirmations.append("Volume Spike")
+                        if breakout:
+                            confirmations.append("Breakout")
+                        
+                        msg = (f"🟢 {ticker} - {price:.2f}\n"
+                               f"ATR: {atr:.2f}, Sell Threshold: {price - (ATR_MULTIPLIER * atr):.2f}\n"
+                               f"Confirmations: {', '.join(confirmations)}")
+                        print(msg)
+                        send_telegram_message(msg)
+                    else:
+                        print(f"⚠️ {ticker}: All conditions met but waiting for volume spike or breakout confirmation")
 
             # Update trailing stop
             if stock["holdings"] > 0:
@@ -370,6 +364,7 @@ def main():
                     msg = (
                         f"📈 {ticker} has reached its 52-week high at {price:.2f}.\n"
                         f"Entry: {stock['entry_price']:.2f}, Change: {change:.2f}%\n"
+                        f"Volume Spike: {'✅' if volume_spike else '❌'}\n"
                         f"Would you like to SELL or HOLD?"
                     )
                     print(msg)
@@ -396,25 +391,19 @@ def main():
                 ticker, f"{price:.2f}",
                 f"{stock['entry_price']:.2f}" if stock['entry_price'] else "N/A",
                 f"{ema_20:.2f}", f"{sma_20:.2f}", f"{sma_50:.2f}", f"{atr:.2f}", f"{rsi:.2f}",
-                f"{macd_current:.2f}", f"{signal_current:.2f}", f"{adx:.2f}", 
+                f"{macd_current:.2f}", f"{signal_current:.2f}", f"{adx:.2f}",
+                "✅" if volume_spike else "❌", "✅" if breakout else "❌",
                 f"{stock['sell_threshold']:.2f}" if stock['sell_threshold'] else "N/A",
                 f"{change:.2f}%" if change else "N/A", action
             ])
-
-        # for ticker in bad_tickers:
-        #     if ticker in TICKERS:
-        #         TICKERS.remove(ticker)
-        #     stock_data.pop(ticker, None)
-        #     last_actions.pop(ticker, None)
 
         should_print_915 = current_time == "09:15" and state["last_print_915"] != today
         should_print_315 = current_time == "15:15" and state["last_print_315"] != today
 
         if action_changed or should_print_915 or should_print_315:
-            # print(f"\n📊 {now_ist.strftime('%Y-%m-%d %H:%M:%S')} — Stock Status")
             print(tabulate(table_data, headers=[
-                "Ticker", "Current Price", "Entry Price", "20-EMA", "20-SMA", "50-SMA", "MACD", "Signal",
-                "ATR", "RSI", "ADX", "Sell Threshold", "Change %", "Action"
+                "Ticker", "Current Price", "Entry Price", "20-EMA", "20-SMA", "50-SMA", "ATR", "RSI",
+                "MACD", "Signal", "ADX", "Vol Spike", "Breakout", "Sell Threshold", "Change %", "Action"
             ], tablefmt="grid"))
 
             if should_print_915:
