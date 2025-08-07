@@ -1,28 +1,39 @@
-# Use a base image that already has TA-Lib compiled
-FROM continuumio/miniconda3:latest
+FROM python:3.13-alpine
 
-# Install Python 3.13 and necessary packages via conda
-RUN conda install -c conda-forge python=3.13 libta-lib ta-lib numpy pandas -y && \
-    conda clean -a
+# Install build dependencies
+RUN apk add --no-cache \
+    build-base \
+    wget \
+    linux-headers \
+    musl-dev \
+    gcc \
+    g++
 
-# Install pip packages
-RUN pip install --no-cache-dir gunicorn
+# Download and compile TA-Lib
+RUN cd /tmp && \
+    wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
+    tar -zxvf ta-lib-0.4.0-src.tar.gz && \
+    cd ta-lib && \
+    ./configure --build=x86_64-alpine-linux-musl --prefix=/usr/local && \
+    make && make install && \
+    cd / && rm -rf /tmp/ta-lib*
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements file
+# Copy requirements
 COPY requirements.txt .
 
-# Remove TA-Lib from requirements if it exists and install remaining packages
-RUN grep -v "TA-Lib\|ta-lib\|talib" requirements.txt > requirements_filtered.txt || cp requirements.txt requirements_filtered.txt
-RUN pip install --no-cache-dir -r requirements_filtered.txt
+# Install Python packages
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir numpy && \
+    pip install --no-cache-dir TA-Lib && \
+    grep -v "TA-Lib" requirements.txt > requirements_clean.txt && \
+    pip install --no-cache-dir -r requirements_clean.txt
 
-# Copy application code
+# Copy app
 COPY . .
 
-# Expose port
 EXPOSE 5000
 
-# Run the application
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
