@@ -54,7 +54,7 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 if TELEGRAM_CHAT_ID:
-    TELEGRAM_CHAT_ID = [chat_id.strip() for chat_id in TELEGRAM_CHAT_ID_STR.split(",")]
+    TELEGRAM_CHAT_ID = [chat_id.strip() for chat_id in TELEGRAM_CHAT_ID.split(",")]
 else:
     TELEGRAM_CHAT_ID = []
 # Trading Configuration
