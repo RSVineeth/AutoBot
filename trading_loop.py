@@ -672,7 +672,10 @@ def main_trading_loop():
 # ENTRY POINT
 # ============================
 
-if __name__ == "__main__":
+# Add this function before the "if __name__ == "__main__":" block at the end of trading_loop.py
+
+def main():
+    """Main entry point for the trading bot"""
     # Set up exit handlers first
     setup_exit_handlers()
     
@@ -705,4 +708,43 @@ if __name__ == "__main__":
         cleanup_and_exit()
     finally:
         print_final_summary()
-        # print_detailed_status_table()
+
+
+# Keep the existing if __name__ == "__main__": block as is, but now it can call main()
+if __name__ == "__main__":
+    main()
+
+# if __name__ == "__main__":
+#     # Set up exit handlers first
+#     setup_exit_handlers()
+    
+#     # Verify required libraries
+#     try:
+#         import talib
+#         from tabulate import tabulate
+#         logger.info("All required libraries verified")
+#     except ImportError as e:
+#         if 'talib' in str(e):
+#             logger.error("TA-Lib not installed. Install with: pip install TA-Lib")
+#             logger.error("On Windows, you might need to download the wheel from: https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib")
+#         elif 'tabulate' in str(e):
+#             logger.error("tabulate not installed. Install with: pip install tabulate")
+#         sys.exit(1)
+    
+#     # Configuration check
+#     if TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
+#         logger.warning("WARNING: Telegram bot token not configured. Messages will print to console.")
+    
+#     # Print initial status table
+#     logger.info("Fetching initial stock data...")
+#     print_detailed_status_table()
+    
+#     # Start the trading bot
+#     try:
+#         main_trading_loop()
+#     except Exception as e:
+#         logger.error(f"Fatal error: {e}")
+#         cleanup_and_exit()
+#     finally:
+#         print_final_summary()
+#         # print_detailed_status_table()
