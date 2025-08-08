@@ -48,7 +48,7 @@ logging.getLogger("yfinance").disabled = True
 
 # Telegram Configuration
 # TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
-# TELEGRAM_CHAT_ID = ['1012793457','1209666577']
+# TELEGRAM_CHAT_ID = ["1012793457","1209666577"]
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
@@ -226,7 +226,8 @@ def send_telegram_message(message: str):
         logger.info(f"[TELEGRAM] {message}")
         return
     
-    chat_ids = TELEGRAM_CHAT_ID.split(",") # remove when locally tested
+    # chat_ids = TELEGRAM_CHAT_ID
+    # .split(",") # remove when locally tested
     for chat_id in TELEGRAM_CHAT_ID:
 
     # chat_ids = TELEGRAM_CHAT_ID
