@@ -100,14 +100,35 @@ def cleanup_and_exit():
     send_telegram_message("🛑 *Bot Stopped*\nTrading session ended")
     sys.exit(0)
 
-def setup_exit_handlers():
-    """Setup graceful exit handlers"""
-    def signal_handler(sig, frame):
-        cleanup_and_exit()
+# def setup_exit_handlers():
+#     """Setup graceful exit handlers"""
+#     def signal_handler(sig, frame):
+#         cleanup_and_exit()
     
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-    atexit.register(print_final_summary)
+#     signal.signal(signal.SIGINT, signal_handler)
+#     signal.signal(signal.SIGTERM, signal_handler)
+#     atexit.register(print_final_summary)
+
+def setup_exit_handlers():
+    """Setup graceful exit handlers - only works in main thread"""
+    try:
+        def signal_handler(sig, frame):
+            cleanup_and_exit()
+        
+        # Only set up signal handlers if we're in the main thread
+        if threading.current_thread() is threading.main_thread():
+            signal.signal(signal.SIGINT, signal_handler)
+            signal.signal(signal.SIGTERM, signal_handler)
+            logger.info("Signal handlers set up successfully")
+        else:
+            logger.info("Skipping signal handlers - not in main thread")
+            
+        atexit.register(print_final_summary)
+        
+    except Exception as e:
+        logger.warning(f"Could not set up signal handlers: {e}")
+        # Still register the atexit handler
+        atexit.register(print_final_summary)
 
 def print_final_summary():
     """Print final session summary"""
