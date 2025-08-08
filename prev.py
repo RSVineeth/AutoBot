@@ -15,7 +15,6 @@ import signal
 import sys
 import logging
 import os
-import gc
 
 warnings.filterwarnings('ignore')
 
@@ -49,8 +48,12 @@ logging.getLogger("yfinance").disabled = True
 # Telegram Configuration
 TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
 TELEGRAM_CHAT_ID = ['1012793457','1209666577']
+# TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+# TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # Trading Configuration
+# TICKERS = ['RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ITC.NS', 
+#            'BHARTIARTL.NS', 'SBIN.NS', 'LT.NS', 'HCLTECH.NS', 'WIPRO.NS']
 TICKERS = [
     "FILATFASH.NS", "SRESTHA.BO", "HARSHILAGR.BO", "GTLINFRA.NS", "ITC.NS",
     "OBEROIRLTY.NS", "JAMNAAUTO.NS", "KSOLVES.NS", "ADANIGREEN.NS",
@@ -71,6 +74,8 @@ TICKERS = [
     "IFCI.NS", "CDSL.NS", "NUVAMA.NS", "NEULANDLAB.NS", "GODFRYPHLP.NS",
     "BAJAJHFL.NS", "PIDILITIND.NS", "HBLENGINE.NS", "DLF.NS", "RKFORGE.NS"
 ]
+# tickers_str = os.getenv("TICKERS")
+# TICKERS = tickers_str.split(",") if tickers_str else []
 
 CHECK_INTERVAL = 60 * 5  # 5 minutes
 SHARES_TO_BUY = 2
@@ -83,12 +88,6 @@ MARKET_START = "00:15"
 MARKET_END = "23:45"
 ALIVE_CHECK_MORNING = "09:15"
 ALIVE_CHECK_EVENING = "15:00"
-
-# Memory Optimization Settings
-BATCH_SIZE = 10  # Process 10 stocks at a time
-BATCH_DELAY = 2  # 2 seconds between batches
-MAX_FAILED_ATTEMPTS = 3
-FAILED_TICKER_RESET_LIMIT = 20
 
 # ============================
 # GLOBAL VARIABLES
@@ -106,48 +105,8 @@ class StockMemory:
         self.total_trades = 0
         self.profitable_trades = 0
         self.total_pnl = 0.0
-        # Memory optimization tracking
-        self.failed_tickers = {}  # {ticker: fail_count}
-        self.batch_results = {}  # Temporary storage for batch results
 
 memory = StockMemory()
-
-# ============================
-# MEMORY MANAGEMENT
-# ============================
-
-def cleanup_memory():
-    """Aggressive memory cleanup"""
-    try:
-        # Clear temporary data
-        memory.batch_results.clear()
-        
-        # Force garbage collection
-        collected = gc.collect()
-        logger.debug(f"Garbage collector freed {collected} objects")
-        
-        # Reset failed tickers if list gets too large
-        if len(memory.failed_tickers) > FAILED_TICKER_RESET_LIMIT:
-            logger.info(f"Resetting failed tickers list ({len(memory.failed_tickers)} entries)")
-            memory.failed_tickers.clear()
-            
-    except Exception as e:
-        logger.error(f"Error in memory cleanup: {e}")
-
-def should_skip_ticker(ticker: str) -> bool:
-    """Check if ticker should be skipped due to repeated failures"""
-    return memory.failed_tickers.get(ticker, 0) >= MAX_FAILED_ATTEMPTS
-
-def mark_ticker_failed(ticker: str):
-    """Mark ticker as failed"""
-    memory.failed_tickers[ticker] = memory.failed_tickers.get(ticker, 0) + 1
-    if memory.failed_tickers[ticker] >= MAX_FAILED_ATTEMPTS:
-        logger.warning(f"{ticker} marked as consistently failing - will skip temporarily")
-
-def reset_ticker_failure(ticker: str):
-    """Reset ticker failure count on success"""
-    if ticker in memory.failed_tickers:
-        del memory.failed_tickers[ticker]
 
 # ============================
 # EXIT HANDLERS
@@ -159,6 +118,15 @@ def cleanup_and_exit():
     print_final_summary()
     send_telegram_message("🛑 *Bot Stopped*\nTrading session ended")
     sys.exit(0)
+
+# def setup_exit_handlers():
+#     """Setup graceful exit handlers"""
+#     def signal_handler(sig, frame):
+#         cleanup_and_exit()
+    
+#     signal.signal(signal.SIGINT, signal_handler)
+#     signal.signal(signal.SIGTERM, signal_handler)
+#     atexit.register(print_final_summary)
 
 def setup_exit_handlers():
     """Setup graceful exit handlers - only works in main thread"""
@@ -197,7 +165,6 @@ def print_final_summary():
             f"Win Rate: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "Win Rate: 0%",
             f"Total P&L: {memory.total_pnl:.2f}",
             f"Active Positions: {active_positions}",
-            f"Failed Tickers: {len(memory.failed_tickers)}",
             "="*80
         ]
         
@@ -216,8 +183,8 @@ def send_telegram_message(message: str):
     if not TELEGRAM_BOT_TOKEN or TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
         logger.info(f"[TELEGRAM] {message}")
         return
-    
     chat_ids = TELEGRAM_CHAT_ID
+    # .split(",") # remove when locally tested
 
     for chat_id in chat_ids:
         try:
@@ -229,7 +196,7 @@ def send_telegram_message(message: str):
             }
             response = requests.post(url, data=data, timeout=10)
             if response.status_code != 200:
-                logger.error(f"Failed to send telegram message to {chat_id}: {response.text}")
+                logger.error(f"Failed to send telegram message: {response.text}")
             else:
                 logger.debug(f"Telegram message sent to {chat_id}")
         except Exception as e:
@@ -239,13 +206,11 @@ def send_alive_notification():
     """Send bot alive notification"""
     current_time = datetime.now().strftime("%H:%M")
     active_positions = sum(1 for ticker in memory.holdings if memory.holdings[ticker].get('shares', 0) > 0)
-    failed_tickers_count = len(memory.failed_tickers)
     
     message = f"✅ *Stock Trading Bot is ALIVE* - {current_time}\n"
     message += f"📊 Monitoring {len(TICKERS)} stocks\n"
     message += f"💼 Active positions: {active_positions}\n"
-    message += f"💰 Session P&L: {memory.total_pnl:.2f}\n"
-    message += f"⚠️ Failed tickers: {failed_tickers_count}"
+    message += f"💰 Session P&L: {memory.total_pnl:.2f}"
     
     send_telegram_message(message)
     memory.last_alive_check = datetime.now()
@@ -306,33 +271,21 @@ def calculate_indicators(df: pd.DataFrame) -> Dict:
         return {}
 
 # ============================
-# OPTIMIZED DATA FETCHING
+# DATA FETCHING
 # ============================
 
-def get_stock_data_optimized(ticker: str, period: str = "3mo", max_retries: int = 2) -> Optional[pd.DataFrame]:
-    """Optimized stock data fetching with progressive retry"""
-    for attempt in range(max_retries):
-        try:
-            # Use shorter period on retry to reduce data load
-            current_period = "1mo" if attempt > 0 else period
-            
-            stock = yf.Ticker(ticker)
-            df = stock.history(period=current_period)
-            
-            if df.empty:
-                logger.warning(f"No data for {ticker} (attempt {attempt + 1})")
-                if attempt < max_retries - 1:
-                    time.sleep(0.5 * (attempt + 1))  # Exponential backoff
-                continue
-            
-            return df
-            
-        except Exception as e:
-            logger.error(f"Error fetching data for {ticker} (attempt {attempt + 1}): {e}")
-            if attempt < max_retries - 1:
-                time.sleep(0.5 * (attempt + 1))  # Exponential backoff
-    
-    return None
+def get_stock_data(ticker: str, period: str = "3mo") -> Optional[pd.DataFrame]:
+    """Fetch stock data from Yahoo Finance"""
+    try:
+        stock = yf.Ticker(ticker)
+        df = stock.history(period=period)
+        if df.empty:
+            logger.warning(f"No data for {ticker}")
+            return None
+        return df
+    except Exception as e:
+        logger.error(f"Error fetching data for {ticker}: {e}")
+        return None
 
 def get_realtime_data(ticker: str) -> Optional[Dict]:
     """Get real-time stock data"""
@@ -369,7 +322,7 @@ def has_earnings_soon(ticker: str) -> bool:
     return False
 
 # ============================
-# TRADING LOGIC (UNCHANGED)
+# TRADING LOGIC
 # ============================
 
 def should_buy(ticker: str, indicators: Dict, current_price: float) -> bool:
@@ -535,65 +488,29 @@ def check_52w_high_alert(ticker: str, current_price: float, indicators: Dict):
             memory.alerts_sent[ticker]['52w_high'] = True
 
 # ============================
-# OPTIMIZED ANALYSIS FUNCTION
+# MAIN ANALYSIS FUNCTION
 # ============================
 
-def analyze_stock_optimized(ticker: str) -> Dict:
-    """Analyze single stock with memory optimization"""
+def analyze_stock(ticker: str):
+    """Analyze single stock and make trading decisions"""
     try:
         logger.debug(f"Analyzing {ticker}...")
         
-        # Skip if ticker is consistently failing
-        if should_skip_ticker(ticker):
-            logger.debug(f"Skipping {ticker} - too many failures")
-            return {
-                'ticker': ticker,
-                'status': 'SKIP',
-                'current_price': 0.0,
-                'entry_price': 0.0,
-                'indicators': {},
-                'error': 'Too many failures'
-            }
-        
-        historical_df = get_stock_data_optimized(ticker, period="3mo")
+        historical_df = get_stock_data(ticker, period="3mo")
         if historical_df is None or historical_df.empty:
             logger.warning(f"No historical data for {ticker}")
-            mark_ticker_failed(ticker)
-            return {
-                'ticker': ticker,
-                'status': 'ERROR',
-                'current_price': 0.0,
-                'entry_price': 0.0,
-                'indicators': {},
-                'error': 'No historical data'
-            }
+            return
         
         indicators = calculate_indicators(historical_df)
         
         if not indicators:
             logger.warning(f"Failed to calculate indicators for {ticker}")
-            mark_ticker_failed(ticker)
-            return {
-                'ticker': ticker,
-                'status': 'ERROR',
-                'current_price': 0.0,
-                'entry_price': 0.0,
-                'indicators': {},
-                'error': 'Failed to calculate indicators'
-            }
+            return
         
         realtime_data = get_realtime_data(ticker)
         if not realtime_data:
             logger.warning(f"No real-time data for {ticker}")
-            mark_ticker_failed(ticker)
-            return {
-                'ticker': ticker,
-                'status': 'ERROR',
-                'current_price': 0.0,
-                'entry_price': 0.0,
-                'indicators': indicators,
-                'error': 'No real-time data'
-            }
+            return
         
         current_price = realtime_data['price']
         atr = indicators.get('atr', 0)
@@ -607,120 +524,24 @@ def analyze_stock_optimized(ticker: str) -> Dict:
             check_52w_high_alert(ticker, current_price, indicators)
         
         # Trading decisions
-        action_taken = 'NONE'
         if should_sell(ticker, current_price):
             execute_sell(ticker, current_price)
-            action_taken = 'SELL'
         elif should_buy(ticker, indicators, current_price):
             execute_buy(ticker, current_price, indicators)
-            action_taken = 'BUY'
         
         # Update action status
         new_status = "HOLD" if (ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0) else "WAIT"
         memory.last_action_status[ticker] = new_status
-        
-        # Reset failure count on success
-        reset_ticker_failure(ticker)
-        
-        return {
-            'ticker': ticker,
-            'status': new_status,
-            'current_price': current_price,
-            'entry_price': memory.holdings.get(ticker, {}).get('entry_price', 0.0),
-            'indicators': indicators,
-            'action_taken': action_taken,
-            'error': None
-        }
             
     except Exception as e:
         logger.error(f"Error analyzing {ticker}: {e}")
-        mark_ticker_failed(ticker)
-        return {
-            'ticker': ticker,
-            'status': 'ERROR',
-            'current_price': 0.0,
-            'entry_price': 0.0,
-            'indicators': {},
-            'error': str(e)
-        }
 
 # ============================
-# BATCH PROCESSING
-# ============================
-
-def process_ticker_batch(batch_tickers: List[str]) -> List[Dict]:
-    """Process a batch of tickers"""
-    batch_results = []
-    
-    logger.info(f"Processing batch of {len(batch_tickers)} stocks...")
-    
-    for ticker in batch_tickers:
-        try:
-            result = analyze_stock_optimized(ticker)
-            batch_results.append(result)
-            
-            # Small delay between individual ticker processing
-            time.sleep(0.5)
-            
-        except Exception as e:
-            logger.error(f"Error processing {ticker} in batch: {e}")
-            batch_results.append({
-                'ticker': ticker,
-                'status': 'ERROR',
-                'current_price': 0.0,
-                'entry_price': 0.0,
-                'indicators': {},
-                'error': str(e)
-            })
-    
-    return batch_results
-
-def analyze_all_stocks_batched():
-    """Analyze all stocks in batches with memory optimization"""
-    all_results = []
-    active_tickers = [ticker for ticker in TICKERS if not should_skip_ticker(ticker)]
-    
-    logger.info(f"Analyzing {len(active_tickers)} active tickers in batches of {BATCH_SIZE}")
-    
-    # Process tickers in batches
-    for i in range(0, len(active_tickers), BATCH_SIZE):
-        batch = active_tickers[i:i + BATCH_SIZE]
-        batch_num = (i // BATCH_SIZE) + 1
-        total_batches = (len(active_tickers) - 1) // BATCH_SIZE + 1
-        
-        logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch)} stocks)")
-        
-        try:
-            batch_results = process_ticker_batch(batch)
-            all_results.extend(batch_results)
-            
-            # Store batch results temporarily
-            for result in batch_results:
-                memory.batch_results[result['ticker']] = result
-            
-            # Memory cleanup after each batch
-            cleanup_memory()
-            
-            # Delay between batches to avoid overwhelming the system
-            if i + BATCH_SIZE < len(active_tickers):
-                logger.debug(f"Waiting {BATCH_DELAY} seconds before next batch...")
-                time.sleep(BATCH_DELAY)
-                
-        except Exception as e:
-            logger.error(f"Error processing batch {batch_num}: {e}")
-    
-    # Final cleanup
-    cleanup_memory()
-    
-    logger.info(f"Completed analysis of {len(all_results)} stocks")
-    return all_results
-
-# ============================
-# CONSOLE OUTPUT (OPTIMIZED)
+# CONSOLE OUTPUT
 # ============================
 
 def print_detailed_status_table():
-    """Print comprehensive status table with optimized data access"""
+    """Print comprehensive status table"""
     table_data = []
     
     logger.info("Generating detailed status table...")
@@ -729,35 +550,21 @@ def print_detailed_status_table():
         try:
             symbol = ticker.replace('.NS', '').replace('.BO', '')
             
-            # Use cached batch results if available, otherwise get fresh data
-            if ticker in memory.batch_results:
-                result = memory.batch_results[ticker]
-                current_price = result['current_price']
-                indicators = result.get('indicators', {})
-                error_status = result.get('error')
-            else:
-                # Fallback for tickers not in batch results
-                realtime_data = get_realtime_data(ticker)
-                current_price = realtime_data['price'] if realtime_data else 0.0
-                indicators = {}
-                error_status = None
+            realtime_data = get_realtime_data(ticker)
+            current_price = realtime_data['price'] if realtime_data else 0.0
             
-            # Skip failed tickers in display
-            if should_skip_ticker(ticker):
-                status = 'SKIP'
-                current_price_str = "SKIP"
-            elif error_status:
-                status = 'ERROR'
-                current_price_str = "ERROR"
+            historical_df = get_stock_data(ticker, period="3mo")
+            if historical_df is not None and not historical_df.empty:
+                indicators = calculate_indicators(historical_df)
             else:
-                status = memory.last_action_status.get(ticker, 'WAIT')
-                current_price_str = f"{current_price:.2f}" if current_price > 0 else "N/A"
+                indicators = {}
             
             sma_20 = indicators.get('sma_20', 0.0) or 0.0
             sma_50 = indicators.get('sma_50', 0.0) or 0.0
             atr = indicators.get('atr', 0.0) or 0.0
             rsi = indicators.get('rsi', 0.0) or 0.0
             
+            status = memory.last_action_status.get(ticker, 'WAIT')
             entry_price = 0.0
             sell_threshold = 0.0
             change_percent = 0.0
@@ -765,10 +572,13 @@ def print_detailed_status_table():
             if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
                 entry_price = memory.holdings[ticker]['entry_price']
                 sell_threshold = memory.sell_thresholds.get(ticker, 0.0)
-                if entry_price > 0 and current_price > 0:
+                if entry_price > 0:
                     change_percent = ((current_price - entry_price) / entry_price) * 100
                 status = 'HOLD'
+            else:
+                status = 'WAIT'
             
+            current_price_str = f"{current_price:.2f}" if current_price > 0 else "N/A"
             entry_price_str = f"{entry_price:.2f}" if entry_price > 0 else "--"
             sma_20_str = f"{sma_20:.2f}" if sma_20 > 0 else "N/A"
             sma_50_str = f"{sma_50:.2f}" if sma_50 > 0 else "N/A"
@@ -792,7 +602,6 @@ def print_detailed_status_table():
             
         except Exception as e:
             logger.error(f"Error processing {ticker} for table: {e}")
-            symbol = ticker.replace('.NS', '').replace('.BO', '')
             table_data.append([
                 symbol,
                 "ERROR",
@@ -820,11 +629,7 @@ def print_detailed_status_table():
     
     total_positions = len([row for row in table_data if row[9] == 'HOLD'])
     waiting_positions = len([row for row in table_data if row[9] == 'WAIT'])
-    skipped_positions = len([row for row in table_data if row[9] == 'SKIP'])
-    error_positions = len([row for row in table_data if row[9] == 'ERROR'])
-    
-    logger.info(f"SUMMARY: {total_positions} HOLD | {waiting_positions} WAIT | {skipped_positions} SKIP | {error_positions} ERROR")
-    logger.info(f"Total P&L: {memory.total_pnl:.2f} | Failed Tickers: {len(memory.failed_tickers)}")
+    logger.info(f"SUMMARY: {total_positions} HOLD | {waiting_positions} WAIT | Total P&L: {memory.total_pnl:.2f}")
     logger.info(f"Last Updated: {datetime.now().strftime('%H:%M:%S')}")
     logger.info("="*120)
 
@@ -856,13 +661,13 @@ def is_alive_check_time() -> bool:
     return morning_range or evening_range
 
 # ============================
-# MAIN TRADING LOOP (OPTIMIZED)
+# MAIN TRADING LOOP
 # ============================
 
 def main_trading_loop():
-    """Main trading loop with batch processing"""
-    logger.info("Memory-Optimized Stock Trading Bot Started!")
-    send_telegram_message("*Memory-Optimized Stock Trading Bot Started!*\n📊 Monitoring stocks in batches for better performance")
+    """Main trading loop"""
+    logger.info("Stock Trading Bot Started!")
+    send_telegram_message("*Stock Trading Bot Started!*\n Monitoring stocks every 5 minutes")
     
     while True:
         try:
@@ -880,21 +685,18 @@ def main_trading_loop():
                 time.sleep(CHECK_INTERVAL)
                 continue
             
-            logger.info(f"[{current_time.strftime('%H:%M:%S')}] Starting batch analysis...")
+            logger.info(f"[{current_time.strftime('%H:%M:%S')}] Analyzing stocks...")
             
-            # Analyze all stocks in batches
-            results = analyze_all_stocks_batched()
+            # Analyze all stocks
+            for ticker in TICKERS:
+                analyze_stock(ticker)
+                time.sleep(1)  # Rate limiting
             
-            # Log batch summary
-            successful = len([r for r in results if r.get('error') is None])
-            errors = len([r for r in results if r.get('error') is not None])
-            actions = len([r for r in results if r.get('action_taken', 'NONE') != 'NONE'])
-            
-            logger.info(f"Batch analysis complete: {successful} successful, {errors} errors, {actions} actions taken")
-            
-            # Print detailed status table
-            print_detailed_status_table()
-            
+            # Print detailed status table every 15 minutes during market hours
+            # if current_time.minute % 15 == 0 and current_time.second < 30:
+            #     print_detailed_status_table()
+            # elif is_alive_check_time():
+            print_detailed_status_table()           
             logger.info(f"[{current_time.strftime('%H:%M:%S')}] Analysis complete. Waiting {CHECK_INTERVAL//60} minutes...")
             
         except KeyboardInterrupt:
@@ -904,14 +706,14 @@ def main_trading_loop():
         except Exception as e:
             logger.error(f"Error in main loop: {e}")
             send_telegram_message(f"❌ *Bot Error*\nError: {str(e)}\nBot continuing...")
-            # Cleanup memory on error
-            cleanup_memory()
         
         time.sleep(CHECK_INTERVAL)
 
 # ============================
 # ENTRY POINT
 # ============================
+
+# Add this function before the "if __name__ == "__main__":" block at the end of trading_loop.py
 
 def main():
     """Main entry point for the trading bot"""
@@ -935,13 +737,6 @@ def main():
     if TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
         logger.warning("WARNING: Telegram bot token not configured. Messages will print to console.")
     
-    # Log optimization settings
-    logger.info(f"Memory optimization settings:")
-    logger.info(f"  - Batch size: {BATCH_SIZE} stocks")
-    logger.info(f"  - Batch delay: {BATCH_DELAY} seconds")
-    logger.info(f"  - Max failed attempts: {MAX_FAILED_ATTEMPTS}")
-    logger.info(f"  - Failed ticker reset limit: {FAILED_TICKER_RESET_LIMIT}")
-    
     # Print initial status table
     logger.info("Fetching initial stock data...")
     print_detailed_status_table()
@@ -955,6 +750,42 @@ def main():
     finally:
         print_final_summary()
 
+
+# Keep the existing if __name__ == "__main__": block as is, but now it can call main()
 if __name__ == "__main__":
     main()
+
+# if __name__ == "__main__":
+#     # Set up exit handlers first
+#     setup_exit_handlers()
     
+#     # Verify required libraries
+#     try:
+#         import talib
+#         from tabulate import tabulate
+#         logger.info("All required libraries verified")
+#     except ImportError as e:
+#         if 'talib' in str(e):
+#             logger.error("TA-Lib not installed. Install with: pip install TA-Lib")
+#             logger.error("On Windows, you might need to download the wheel from: https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib")
+#         elif 'tabulate' in str(e):
+#             logger.error("tabulate not installed. Install with: pip install tabulate")
+#         sys.exit(1)
+    
+#     # Configuration check
+#     if TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
+#         logger.warning("WARNING: Telegram bot token not configured. Messages will print to console.")
+    
+#     # Print initial status table
+#     logger.info("Fetching initial stock data...")
+#     print_detailed_status_table()
+    
+#     # Start the trading bot
+#     try:
+#         main_trading_loop()
+#     except Exception as e:
+#         logger.error(f"Fatal error: {e}")
+#         cleanup_and_exit()
+#     finally:
+#         print_final_summary()
+#         # print_detailed_status_table()

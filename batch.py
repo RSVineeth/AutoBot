@@ -8,14 +8,16 @@ from datetime import datetime, timedelta
 import talib
 import schedule
 import threading
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from tabulate import tabulate
 import atexit
 import signal
 import sys
 import logging
 import os
-import gc
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from functools import wraps, lru_cache
+import random
 
 warnings.filterwarnings('ignore')
 
@@ -23,34 +25,85 @@ warnings.filterwarnings('ignore')
 # LOGGING CONFIGURATION
 # ============================
 
-# Setup logging system
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
     handlers=[
-        logging.StreamHandler(sys.stdout),  # Console output
-        logging.FileHandler('trading_bot.log', mode='a')  # File output
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('trading_bot.log', mode='a')
     ]
 )
 
-# Create logger instance
 logger = logging.getLogger(__name__)
-
-# Suppress noisy external library logs
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("yfinance").disabled = True
 
 # ============================
+# RATE LIMITING & CACHING
+# ============================
+
+class RateLimiter:
+    def __init__(self, calls_per_second=2):
+        self.calls_per_second = calls_per_second
+        self.min_interval = 1.0 / calls_per_second
+        self.last_called = 0.0
+        self.lock = threading.Lock()
+    
+    def wait(self):
+        with self.lock:
+            elapsed = time.time() - self.last_called
+            left_to_wait = self.min_interval - elapsed
+            if left_to_wait > 0:
+                time.sleep(left_to_wait)
+            self.last_called = time.time()
+
+class DataCache:
+    def __init__(self, cache_duration_minutes=5):
+        self.cache = {}
+        self.cache_duration = cache_duration_minutes * 60
+        self.lock = threading.Lock()
+    
+    def get(self, key):
+        with self.lock:
+            if key in self.cache:
+                data, timestamp = self.cache[key]
+                if time.time() - timestamp < self.cache_duration:
+                    return data
+                else:
+                    del self.cache[key]
+            return None
+    
+    def set(self, key, data):
+        with self.lock:
+            self.cache[key] = (data, time.time())
+    
+    def clear_old(self):
+        with self.lock:
+            current_time = time.time()
+            expired_keys = [
+                key for key, (_, timestamp) in self.cache.items()
+                if current_time - timestamp >= self.cache_duration
+            ]
+            for key in expired_keys:
+                del self.cache[key]
+
+# Global instances
+rate_limiter = RateLimiter(calls_per_second=1)  # Conservative rate limiting
+data_cache = DataCache(cache_duration_minutes=3)
+price_cache = DataCache(cache_duration_minutes=1)  # Shorter cache for prices
+
+# ============================
 # CONFIGURATION
 # ============================
 
-# Telegram Configuration
 TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
-TELEGRAM_CHAT_ID = ['1012793457','1209666577']
+TELEGRAM_CHAT_ID = ["1012793457","1209666577"]
 
-# Trading Configuration
+# TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+# TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
 TICKERS = [
     "FILATFASH.NS", "SRESTHA.BO", "HARSHILAGR.BO", "GTLINFRA.NS", "ITC.NS",
     "OBEROIRLTY.NS", "JAMNAAUTO.NS", "KSOLVES.NS", "ADANIGREEN.NS",
@@ -72,7 +125,13 @@ TICKERS = [
     "BAJAJHFL.NS", "PIDILITIND.NS", "HBLENGINE.NS", "DLF.NS", "RKFORGE.NS"
 ]
 
+# tickers_str = os.getenv("TICKERS")
+# TICKERS = tickers_str.split(",") if tickers_str else []
+
+# Processing configuration
 CHECK_INTERVAL = 60 * 5  # 5 minutes
+BATCH_SIZE = 20  # Process tickers in batches
+MAX_WORKERS = 5  # Concurrent threads (conservative)
 SHARES_TO_BUY = 2
 ATR_MULTIPLIER = 1.5
 RSI_OVERSOLD = 30
@@ -84,70 +143,25 @@ MARKET_END = "23:45"
 ALIVE_CHECK_MORNING = "09:15"
 ALIVE_CHECK_EVENING = "15:00"
 
-# Memory Optimization Settings
-BATCH_SIZE = 10  # Process 10 stocks at a time
-BATCH_DELAY = 2  # 2 seconds between batches
-MAX_FAILED_ATTEMPTS = 3
-FAILED_TICKER_RESET_LIMIT = 20
-
 # ============================
 # GLOBAL VARIABLES
 # ============================
 
 class StockMemory:
     def __init__(self):
-        self.holdings = {}  # {ticker: {'shares': int, 'entry_price': float}}
-        self.sell_thresholds = {}  # {ticker: float}
-        self.highest_prices = {}  # {ticker: float}
-        self.alerts_sent = {}  # {ticker: {'52w_high': bool}}
-        self.last_action_status = {}  # {ticker: 'HOLD'/'WAIT'}
+        self.holdings = {}
+        self.sell_thresholds = {}
+        self.highest_prices = {}
+        self.alerts_sent = {}
+        self.last_action_status = {}
         self.last_alive_check = None
         self.session_start_time = datetime.now()
         self.total_trades = 0
         self.profitable_trades = 0
         self.total_pnl = 0.0
-        # Memory optimization tracking
-        self.failed_tickers = {}  # {ticker: fail_count}
-        self.batch_results = {}  # Temporary storage for batch results
+        self.failed_tickers = set()  # Track tickers that consistently fail
 
 memory = StockMemory()
-
-# ============================
-# MEMORY MANAGEMENT
-# ============================
-
-def cleanup_memory():
-    """Aggressive memory cleanup"""
-    try:
-        # Clear temporary data
-        memory.batch_results.clear()
-        
-        # Force garbage collection
-        collected = gc.collect()
-        logger.debug(f"Garbage collector freed {collected} objects")
-        
-        # Reset failed tickers if list gets too large
-        if len(memory.failed_tickers) > FAILED_TICKER_RESET_LIMIT:
-            logger.info(f"Resetting failed tickers list ({len(memory.failed_tickers)} entries)")
-            memory.failed_tickers.clear()
-            
-    except Exception as e:
-        logger.error(f"Error in memory cleanup: {e}")
-
-def should_skip_ticker(ticker: str) -> bool:
-    """Check if ticker should be skipped due to repeated failures"""
-    return memory.failed_tickers.get(ticker, 0) >= MAX_FAILED_ATTEMPTS
-
-def mark_ticker_failed(ticker: str):
-    """Mark ticker as failed"""
-    memory.failed_tickers[ticker] = memory.failed_tickers.get(ticker, 0) + 1
-    if memory.failed_tickers[ticker] >= MAX_FAILED_ATTEMPTS:
-        logger.warning(f"{ticker} marked as consistently failing - will skip temporarily")
-
-def reset_ticker_failure(ticker: str):
-    """Reset ticker failure count on success"""
-    if ticker in memory.failed_tickers:
-        del memory.failed_tickers[ticker]
 
 # ============================
 # EXIT HANDLERS
@@ -161,12 +175,11 @@ def cleanup_and_exit():
     sys.exit(0)
 
 def setup_exit_handlers():
-    """Setup graceful exit handlers - only works in main thread"""
+    """Setup graceful exit handlers"""
     try:
         def signal_handler(sig, frame):
             cleanup_and_exit()
         
-        # Only set up signal handlers if we're in the main thread
         if threading.current_thread() is threading.main_thread():
             signal.signal(signal.SIGINT, signal_handler)
             signal.signal(signal.SIGTERM, signal_handler)
@@ -178,7 +191,6 @@ def setup_exit_handlers():
         
     except Exception as e:
         logger.warning(f"Could not set up signal handlers: {e}")
-        # Still register the atexit handler
         atexit.register(print_final_summary)
 
 def print_final_summary():
@@ -217,46 +229,184 @@ def send_telegram_message(message: str):
         logger.info(f"[TELEGRAM] {message}")
         return
     
-    chat_ids = TELEGRAM_CHAT_ID
-
-    for chat_id in chat_ids:
-        try:
+    try:
+        chat_ids = TELEGRAM_CHAT_ID
+        # .split(",")
+        for chat_id in chat_ids:
             url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
             data = {
-                "chat_id": chat_id,
+                "chat_id": chat_id.strip(),
                 "text": message,
                 "parse_mode": "Markdown"
             }
             response = requests.post(url, data=data, timeout=10)
             if response.status_code != 200:
-                logger.error(f"Failed to send telegram message to {chat_id}: {response.text}")
+                logger.error(f"Failed to send telegram message: {response.text}")
             else:
                 logger.debug(f"Telegram message sent to {chat_id}")
-        except Exception as e:
-            logger.error(f"Telegram error for chat {chat_id}: {e}")
+    except Exception as e:
+        logger.error(f"Telegram error: {e}")
 
 def send_alive_notification():
     """Send bot alive notification"""
     current_time = datetime.now().strftime("%H:%M")
     active_positions = sum(1 for ticker in memory.holdings if memory.holdings[ticker].get('shares', 0) > 0)
-    failed_tickers_count = len(memory.failed_tickers)
     
     message = f"✅ *Stock Trading Bot is ALIVE* - {current_time}\n"
     message += f"📊 Monitoring {len(TICKERS)} stocks\n"
     message += f"💼 Active positions: {active_positions}\n"
     message += f"💰 Session P&L: {memory.total_pnl:.2f}\n"
-    message += f"⚠️ Failed tickers: {failed_tickers_count}"
+    message += f"⚠️ Failed tickers: {len(memory.failed_tickers)}"
     
     send_telegram_message(message)
     memory.last_alive_check = datetime.now()
     logger.info(f"Alive notification sent at {current_time}")
 
 # ============================
+# OPTIMIZED DATA FETCHING
+# ============================
+
+def get_stock_data_batch(tickers: List[str], period: str = "3mo") -> Dict[str, pd.DataFrame]:
+    """Fetch historical data for multiple tickers in a single call"""
+    cache_key = f"batch_data_{'-'.join(sorted(tickers))}_{period}"
+    cached_data = data_cache.get(cache_key)
+    if cached_data is not None:
+        logger.debug(f"Using cached batch data for {len(tickers)} tickers")
+        return cached_data
+    
+    try:
+        logger.info(f"Fetching batch data for {len(tickers)} tickers...")
+        rate_limiter.wait()
+        
+        # Use yfinance download for batch processing
+        data = yf.download(tickers, period=period, group_by='ticker', 
+                          threads=True, progress=False)
+        
+        result = {}
+        
+        if len(tickers) == 1:
+            # Single ticker case
+            ticker = tickers[0]
+            if not data.empty:
+                result[ticker] = data
+        else:
+            # Multiple tickers case
+            for ticker in tickers:
+                try:
+                    if ticker in data.columns.levels[0]:
+                        ticker_data = data[ticker].dropna()
+                        if not ticker_data.empty and len(ticker_data) > 50:
+                            result[ticker] = ticker_data
+                        else:
+                            logger.warning(f"Insufficient data for {ticker}")
+                            memory.failed_tickers.add(ticker)
+                    else:
+                        logger.warning(f"No data found for {ticker}")
+                        memory.failed_tickers.add(ticker)
+                except Exception as e:
+                    logger.error(f"Error processing data for {ticker}: {e}")
+                    memory.failed_tickers.add(ticker)
+        
+        data_cache.set(cache_key, result)
+        logger.info(f"Batch data fetched for {len(result)} out of {len(tickers)} tickers")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in batch data fetch: {e}")
+        return {}
+
+def get_realtime_prices_batch(tickers: List[str]) -> Dict[str, float]:
+    """Get real-time prices for multiple tickers"""
+    cache_key = f"batch_prices_{'-'.join(sorted(tickers))}"
+    cached_prices = price_cache.get(cache_key)
+    if cached_prices is not None:
+        logger.debug(f"Using cached prices for {len(tickers)} tickers")
+        return cached_prices
+    
+    try:
+        logger.info(f"Fetching real-time prices for {len(tickers)} tickers...")
+        rate_limiter.wait()
+        
+        # Create a space-separated string for yfinance
+        tickers_str = ' '.join(tickers)
+        data = yf.download(tickers_str, period='1d', interval='1m', 
+                          threads=True, progress=False)
+        
+        result = {}
+        
+        if len(tickers) == 1:
+            # Single ticker case
+            if not data.empty and 'Close' in data.columns:
+                result[tickers[0]] = float(data['Close'].iloc[-1])
+        else:
+            # Multiple tickers case
+            if not data.empty and 'Close' in data.columns.levels[1]:
+                for ticker in tickers:
+                    try:
+                        if (ticker, 'Close') in data.columns:
+                            close_data = data[(ticker, 'Close')].dropna()
+                            if not close_data.empty:
+                                result[ticker] = float(close_data.iloc[-1])
+                    except Exception as e:
+                        logger.debug(f"Error getting price for {ticker}: {e}")
+        
+        price_cache.set(cache_key, result)
+        logger.info(f"Real-time prices fetched for {len(result)} out of {len(tickers)} tickers")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in batch price fetch: {e}")
+        return {}
+
+def get_single_stock_data(ticker: str, period: str = "3mo") -> Optional[pd.DataFrame]:
+    """Fallback method to get single stock data"""
+    cache_key = f"single_data_{ticker}_{period}"
+    cached_data = data_cache.get(cache_key)
+    if cached_data is not None:
+        return cached_data
+    
+    try:
+        rate_limiter.wait()
+        stock = yf.Ticker(ticker)
+        df = stock.history(period=period)
+        if not df.empty and len(df) > 50:
+            data_cache.set(cache_key, df)
+            return df
+        else:
+            memory.failed_tickers.add(ticker)
+            return None
+    except Exception as e:
+        logger.error(f"Error fetching single stock data for {ticker}: {e}")
+        memory.failed_tickers.add(ticker)
+        return None
+
+def get_single_realtime_price(ticker: str) -> Optional[float]:
+    """Fallback method to get single stock price"""
+    cache_key = f"single_price_{ticker}"
+    cached_price = price_cache.get(cache_key)
+    if cached_price is not None:
+        return cached_price
+    
+    try:
+        rate_limiter.wait()
+        stock = yf.Ticker(ticker)
+        df = stock.history(period="1d", interval="1m")
+        if not df.empty:
+            price = float(df['Close'].iloc[-1])
+            price_cache.set(cache_key, price)
+            return price
+        else:
+            return None
+    except Exception as e:
+        logger.error(f"Error getting single price for {ticker}: {e}")
+        return None
+
+# ============================
 # TECHNICAL INDICATORS
 # ============================
 
 def calculate_indicators(df: pd.DataFrame) -> Dict:
-    """Calculate technical indicators"""
+    """Calculate technical indicators with error handling"""
     try:
         close_prices = df['Close'].values
         high_prices = df['High'].values
@@ -267,95 +417,56 @@ def calculate_indicators(df: pd.DataFrame) -> Dict:
             logger.warning("Not enough data for indicators calculation")
             return {}
         
-        # Simple Moving Averages
-        sma_20 = talib.SMA(close_prices, timeperiod=20)
-        sma_50 = talib.SMA(close_prices, timeperiod=50)
+        # Calculate indicators with proper error handling
+        indicators = {}
         
-        # RSI
-        rsi = talib.RSI(close_prices, timeperiod=14)
+        try:
+            indicators['sma_20'] = float(talib.SMA(close_prices, timeperiod=20)[-1])
+        except:
+            indicators['sma_20'] = None
+            
+        try:
+            indicators['sma_50'] = float(talib.SMA(close_prices, timeperiod=50)[-1])
+        except:
+            indicators['sma_50'] = None
+            
+        try:
+            indicators['rsi'] = float(talib.RSI(close_prices, timeperiod=14)[-1])
+        except:
+            indicators['rsi'] = None
+            
+        try:
+            indicators['atr'] = float(talib.ATR(high_prices, low_prices, close_prices, timeperiod=14)[-1])
+        except:
+            indicators['atr'] = None
         
-        # ATR
-        atr = talib.ATR(high_prices, low_prices, close_prices, timeperiod=14)
+        try:
+            volume_sma = talib.SMA(volume.astype(float), timeperiod=20)
+            if len(volume_sma) > 0 and not np.isnan(volume_sma[-1]) and volume_sma[-1] > 0:
+                indicators['volume_spike'] = volume[-1] > (volume_sma[-1] * 1.5)
+            else:
+                indicators['volume_spike'] = False
+        except:
+            indicators['volume_spike'] = False
         
-        # Volume analysis
-        volume_sma = talib.SMA(volume.astype(float), timeperiod=20)
-        volume_spike = False
-        if len(volume_sma) > 0 and not np.isnan(volume_sma[-1]) and volume_sma[-1] > 0:
-            volume_spike = volume[-1] > (volume_sma[-1] * 1.5)
+        indicators['52w_high'] = float(df['High'].max())
+        indicators['52w_low'] = float(df['Low'].min())
         
-        def safe_extract(arr, default=None):
-            if arr is None or len(arr) == 0:
-                return default
-            val = arr[-1]
-            return float(val) if not np.isnan(val) else default
-        
-        result = {
-            'sma_20': safe_extract(sma_20),
-            'sma_50': safe_extract(sma_50),
-            'rsi': safe_extract(rsi),
-            'atr': safe_extract(atr),
-            'volume_spike': volume_spike,
-            '52w_high': float(df['High'].max()),
-            '52w_low': float(df['Low'].min())
-        }
-        
-        return result
+        return indicators
         
     except Exception as e:
         logger.error(f"Error calculating indicators: {e}")
         return {}
 
 # ============================
-# OPTIMIZED DATA FETCHING
+# EARNINGS CHECK
 # ============================
 
-def get_stock_data_optimized(ticker: str, period: str = "3mo", max_retries: int = 2) -> Optional[pd.DataFrame]:
-    """Optimized stock data fetching with progressive retry"""
-    for attempt in range(max_retries):
-        try:
-            # Use shorter period on retry to reduce data load
-            current_period = "1mo" if attempt > 0 else period
-            
-            stock = yf.Ticker(ticker)
-            df = stock.history(period=current_period)
-            
-            if df.empty:
-                logger.warning(f"No data for {ticker} (attempt {attempt + 1})")
-                if attempt < max_retries - 1:
-                    time.sleep(0.5 * (attempt + 1))  # Exponential backoff
-                continue
-            
-            return df
-            
-        except Exception as e:
-            logger.error(f"Error fetching data for {ticker} (attempt {attempt + 1}): {e}")
-            if attempt < max_retries - 1:
-                time.sleep(0.5 * (attempt + 1))  # Exponential backoff
-    
-    return None
-
-def get_realtime_data(ticker: str) -> Optional[Dict]:
-    """Get real-time stock data"""
-    try:
-        stock = yf.Ticker(ticker)
-        df = stock.history(period="1d", interval="1m")
-        if df.empty:
-            return None
-        
-        current_price = df['Close'].iloc[-1]
-        return {
-            'price': current_price,
-            'volume': df['Volume'].iloc[-1],
-            'high': df['High'].iloc[-1],
-            'low': df['Low'].iloc[-1]
-        }
-    except Exception as e:
-        logger.error(f"Error getting real-time data for {ticker}: {e}")
-        return None
-
+@lru_cache(maxsize=200)
 def has_earnings_soon(ticker: str) -> bool:
-    """Check if stock has earnings in next 2 days"""
+    """Check if stock has earnings in next 2 days (cached)"""
     try:
+        rate_limiter.wait()
         stock = yf.Ticker(ticker)
         calendar = stock.calendar
         if calendar is not None and not calendar.empty:
@@ -535,229 +646,140 @@ def check_52w_high_alert(ticker: str, current_price: float, indicators: Dict):
             memory.alerts_sent[ticker]['52w_high'] = True
 
 # ============================
-# OPTIMIZED ANALYSIS FUNCTION
+# OPTIMIZED BATCH PROCESSING
 # ============================
 
-def analyze_stock_optimized(ticker: str) -> Dict:
-    """Analyze single stock with memory optimization"""
-    try:
-        logger.debug(f"Analyzing {ticker}...")
-        
-        # Skip if ticker is consistently failing
-        if should_skip_ticker(ticker):
-            logger.debug(f"Skipping {ticker} - too many failures")
-            return {
+def process_ticker_batch(tickers_batch: List[str]) -> List[Dict]:
+    """Process a batch of tickers efficiently"""
+    results = []
+    
+    # Remove failed tickers from batch
+    valid_tickers = [t for t in tickers_batch if t not in memory.failed_tickers]
+    
+    if not valid_tickers:
+        return results
+    
+    logger.info(f"Processing batch of {len(valid_tickers)} tickers...")
+    
+    # Get historical data in batch
+    historical_data = get_stock_data_batch(valid_tickers, period="3mo")
+    
+    # Get real-time prices in batch
+    current_prices = get_realtime_prices_batch(valid_tickers)
+    
+    # Process each ticker with available data
+    for ticker in valid_tickers:
+        try:
+            # Skip if no data available
+            if ticker not in historical_data and ticker not in current_prices:
+                continue
+            
+            # Get or fallback to single requests
+            df = historical_data.get(ticker)
+            if df is None:
+                df = get_single_stock_data(ticker)
+                if df is None:
+                    continue
+            
+            current_price = current_prices.get(ticker)
+            if current_price is None:
+                current_price = get_single_realtime_price(ticker)
+                if current_price is None:
+                    continue
+            
+            # Calculate indicators
+            indicators = calculate_indicators(df)
+            if not indicators:
+                continue
+            
+            # Store result
+            results.append({
                 'ticker': ticker,
-                'status': 'SKIP',
-                'current_price': 0.0,
-                'entry_price': 0.0,
-                'indicators': {},
-                'error': 'Too many failures'
-            }
-        
-        historical_df = get_stock_data_optimized(ticker, period="3mo")
-        if historical_df is None or historical_df.empty:
-            logger.warning(f"No historical data for {ticker}")
-            mark_ticker_failed(ticker)
-            return {
-                'ticker': ticker,
-                'status': 'ERROR',
-                'current_price': 0.0,
-                'entry_price': 0.0,
-                'indicators': {},
-                'error': 'No historical data'
-            }
-        
-        indicators = calculate_indicators(historical_df)
-        
-        if not indicators:
-            logger.warning(f"Failed to calculate indicators for {ticker}")
-            mark_ticker_failed(ticker)
-            return {
-                'ticker': ticker,
-                'status': 'ERROR',
-                'current_price': 0.0,
-                'entry_price': 0.0,
-                'indicators': {},
-                'error': 'Failed to calculate indicators'
-            }
-        
-        realtime_data = get_realtime_data(ticker)
-        if not realtime_data:
-            logger.warning(f"No real-time data for {ticker}")
-            mark_ticker_failed(ticker)
-            return {
-                'ticker': ticker,
-                'status': 'ERROR',
-                'current_price': 0.0,
-                'entry_price': 0.0,
+                'price': current_price,
                 'indicators': indicators,
-                'error': 'No real-time data'
-            }
-        
-        current_price = realtime_data['price']
-        atr = indicators.get('atr', 0)
-        
-        if atr is None:
-            atr = current_price * 0.02
-        
-        # Update trailing stop if holding
-        if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
-            update_trailing_stop(ticker, current_price, atr)
-            check_52w_high_alert(ticker, current_price, indicators)
-        
-        # Trading decisions
-        action_taken = 'NONE'
-        if should_sell(ticker, current_price):
-            execute_sell(ticker, current_price)
-            action_taken = 'SELL'
-        elif should_buy(ticker, indicators, current_price):
-            execute_buy(ticker, current_price, indicators)
-            action_taken = 'BUY'
-        
-        # Update action status
-        new_status = "HOLD" if (ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0) else "WAIT"
-        memory.last_action_status[ticker] = new_status
-        
-        # Reset failure count on success
-        reset_ticker_failure(ticker)
-        
-        return {
-            'ticker': ticker,
-            'status': new_status,
-            'current_price': current_price,
-            'entry_price': memory.holdings.get(ticker, {}).get('entry_price', 0.0),
-            'indicators': indicators,
-            'action_taken': action_taken,
-            'error': None
-        }
-            
-    except Exception as e:
-        logger.error(f"Error analyzing {ticker}: {e}")
-        mark_ticker_failed(ticker)
-        return {
-            'ticker': ticker,
-            'status': 'ERROR',
-            'current_price': 0.0,
-            'entry_price': 0.0,
-            'indicators': {},
-            'error': str(e)
-        }
-
-# ============================
-# BATCH PROCESSING
-# ============================
-
-def process_ticker_batch(batch_tickers: List[str]) -> List[Dict]:
-    """Process a batch of tickers"""
-    batch_results = []
-    
-    logger.info(f"Processing batch of {len(batch_tickers)} stocks...")
-    
-    for ticker in batch_tickers:
-        try:
-            result = analyze_stock_optimized(ticker)
-            batch_results.append(result)
-            
-            # Small delay between individual ticker processing
-            time.sleep(0.5)
-            
-        except Exception as e:
-            logger.error(f"Error processing {ticker} in batch: {e}")
-            batch_results.append({
-                'ticker': ticker,
-                'status': 'ERROR',
-                'current_price': 0.0,
-                'entry_price': 0.0,
-                'indicators': {},
-                'error': str(e)
+                'data': df
             })
-    
-    return batch_results
-
-def analyze_all_stocks_batched():
-    """Analyze all stocks in batches with memory optimization"""
-    all_results = []
-    active_tickers = [ticker for ticker in TICKERS if not should_skip_ticker(ticker)]
-    
-    logger.info(f"Analyzing {len(active_tickers)} active tickers in batches of {BATCH_SIZE}")
-    
-    # Process tickers in batches
-    for i in range(0, len(active_tickers), BATCH_SIZE):
-        batch = active_tickers[i:i + BATCH_SIZE]
-        batch_num = (i // BATCH_SIZE) + 1
-        total_batches = (len(active_tickers) - 1) // BATCH_SIZE + 1
-        
-        logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch)} stocks)")
-        
-        try:
-            batch_results = process_ticker_batch(batch)
-            all_results.extend(batch_results)
             
-            # Store batch results temporarily
-            for result in batch_results:
-                memory.batch_results[result['ticker']] = result
-            
-            # Memory cleanup after each batch
-            cleanup_memory()
-            
-            # Delay between batches to avoid overwhelming the system
-            if i + BATCH_SIZE < len(active_tickers):
-                logger.debug(f"Waiting {BATCH_DELAY} seconds before next batch...")
-                time.sleep(BATCH_DELAY)
-                
         except Exception as e:
-            logger.error(f"Error processing batch {batch_num}: {e}")
+            logger.error(f"Error processing {ticker}: {e}")
+            memory.failed_tickers.add(ticker)
     
-    # Final cleanup
-    cleanup_memory()
-    
-    logger.info(f"Completed analysis of {len(all_results)} stocks")
-    return all_results
+    return results
+
+def analyze_batch_results(batch_results: List[Dict]):
+    """Analyze results from batch processing and make trading decisions"""
+    for result in batch_results:
+        try:
+            ticker = result['ticker']
+            current_price = result['price']
+            indicators = result['indicators']
+            atr = indicators.get('atr', 0)
+            
+            if atr is None:
+                atr = current_price * 0.02
+            
+            # Update trailing stop if holding
+            if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
+                update_trailing_stop(ticker, current_price, atr)
+                check_52w_high_alert(ticker, current_price, indicators)
+            
+            # Trading decisions
+            if should_sell(ticker, current_price):
+                execute_sell(ticker, current_price)
+            elif should_buy(ticker, indicators, current_price):
+                execute_buy(ticker, current_price, indicators)
+            
+            # Update action status
+            new_status = "HOLD" if (ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0) else "WAIT"
+            memory.last_action_status[ticker] = new_status
+            
+        except Exception as e:
+            logger.error(f"Error analyzing result for {result.get('ticker', 'unknown')}: {e}")
 
 # ============================
-# CONSOLE OUTPUT (OPTIMIZED)
+# CONSOLE OUTPUT
 # ============================
 
 def print_detailed_status_table():
-    """Print comprehensive status table with optimized data access"""
+    """Print comprehensive status table"""
     table_data = []
     
     logger.info("Generating detailed status table...")
     
-    for ticker in TICKERS:
+    # Sample a subset for display if too many tickers
+    display_tickers = TICKERS[:50] if len(TICKERS) > 50 else TICKERS
+    if len(TICKERS) > 50:
+        logger.info(f"Displaying first 50 out of {len(TICKERS)} tickers in table")
+    
+    for ticker in display_tickers:
         try:
             symbol = ticker.replace('.NS', '').replace('.BO', '')
             
-            # Use cached batch results if available, otherwise get fresh data
-            if ticker in memory.batch_results:
-                result = memory.batch_results[ticker]
-                current_price = result['current_price']
-                indicators = result.get('indicators', {})
-                error_status = result.get('error')
-            else:
-                # Fallback for tickers not in batch results
-                realtime_data = get_realtime_data(ticker)
-                current_price = realtime_data['price'] if realtime_data else 0.0
-                indicators = {}
-                error_status = None
+            # Skip failed tickers for display
+            if ticker in memory.failed_tickers:
+                table_data.append([symbol, "FAILED", "--", "--", "--", "--", "--", "--", "--", "ERROR"])
+                continue
             
-            # Skip failed tickers in display
-            if should_skip_ticker(ticker):
-                status = 'SKIP'
-                current_price_str = "SKIP"
-            elif error_status:
-                status = 'ERROR'
-                current_price_str = "ERROR"
-            else:
-                status = memory.last_action_status.get(ticker, 'WAIT')
-                current_price_str = f"{current_price:.2f}" if current_price > 0 else "N/A"
+            # Get cached or fetch data for display
+            current_price = 0.0
+            sma_20 = sma_50 = atr = rsi = 0.0
             
-            sma_20 = indicators.get('sma_20', 0.0) or 0.0
-            sma_50 = indicators.get('sma_50', 0.0) or 0.0
-            atr = indicators.get('atr', 0.0) or 0.0
-            rsi = indicators.get('rsi', 0.0) or 0.0
+            # Try to get from cache first
+            price_cache_key = f"batch_prices_{ticker}"
+            cached_price = price_cache.get(price_cache_key)
+            if cached_price:
+                current_price = cached_price
             
+            data_cache_key = f"batch_data_{ticker}_3mo"
+            cached_data = data_cache.get(data_cache_key)
+            if cached_data:
+                indicators = calculate_indicators(cached_data)
+                sma_20 = indicators.get('sma_20', 0.0) or 0.0
+                sma_50 = indicators.get('sma_50', 0.0) or 0.0
+                atr = indicators.get('atr', 0.0) or 0.0
+                rsi = indicators.get('rsi', 0.0) or 0.0
+            
+            status = memory.last_action_status.get(ticker, 'WAIT')
             entry_price = 0.0
             sell_threshold = 0.0
             change_percent = 0.0
@@ -768,7 +790,10 @@ def print_detailed_status_table():
                 if entry_price > 0 and current_price > 0:
                     change_percent = ((current_price - entry_price) / entry_price) * 100
                 status = 'HOLD'
+            else:
+                status = 'WAIT'
             
+            current_price_str = f"{current_price:.2f}" if current_price > 0 else "N/A"
             entry_price_str = f"{entry_price:.2f}" if entry_price > 0 else "--"
             sma_20_str = f"{sma_20:.2f}" if sma_20 > 0 else "N/A"
             sma_50_str = f"{sma_50:.2f}" if sma_50 > 0 else "N/A"
@@ -792,7 +817,6 @@ def print_detailed_status_table():
             
         except Exception as e:
             logger.error(f"Error processing {ticker} for table: {e}")
-            symbol = ticker.replace('.NS', '').replace('.BO', '')
             table_data.append([
                 symbol,
                 "ERROR",
@@ -820,11 +844,10 @@ def print_detailed_status_table():
     
     total_positions = len([row for row in table_data if row[9] == 'HOLD'])
     waiting_positions = len([row for row in table_data if row[9] == 'WAIT'])
-    skipped_positions = len([row for row in table_data if row[9] == 'SKIP'])
     error_positions = len([row for row in table_data if row[9] == 'ERROR'])
     
-    logger.info(f"SUMMARY: {total_positions} HOLD | {waiting_positions} WAIT | {skipped_positions} SKIP | {error_positions} ERROR")
-    logger.info(f"Total P&L: {memory.total_pnl:.2f} | Failed Tickers: {len(memory.failed_tickers)}")
+    logger.info(f"SUMMARY: {total_positions} HOLD | {waiting_positions} WAIT | {error_positions} ERROR")
+    logger.info(f"Total P&L: {memory.total_pnl:.2f} | Failed tickers: {len(memory.failed_tickers)}")
     logger.info(f"Last Updated: {datetime.now().strftime('%H:%M:%S')}")
     logger.info("="*120)
 
@@ -856,17 +879,29 @@ def is_alive_check_time() -> bool:
     return morning_range or evening_range
 
 # ============================
-# MAIN TRADING LOOP (OPTIMIZED)
+# MAIN TRADING LOOP WITH BATCH PROCESSING
 # ============================
 
 def main_trading_loop():
-    """Main trading loop with batch processing"""
-    logger.info("Memory-Optimized Stock Trading Bot Started!")
-    send_telegram_message("*Memory-Optimized Stock Trading Bot Started!*\n📊 Monitoring stocks in batches for better performance")
+    """Main trading loop with optimized batch processing"""
+    logger.info("Stock Trading Bot Started!")
+    logger.info(f"Monitoring {len(TICKERS)} tickers with batch processing")
+    logger.info(f"Batch size: {BATCH_SIZE}, Max workers: {MAX_WORKERS}")
+    send_telegram_message(f"*Stock Trading Bot Started!*\n📊 Monitoring {len(TICKERS)} stocks\n⚡ Using batch processing for efficiency")
+    
+    # Clean up old cache periodically
+    last_cache_cleanup = time.time()
     
     while True:
         try:
             current_time = datetime.now()
+            
+            # Clean up old cache every 30 minutes
+            if time.time() - last_cache_cleanup > 1800:  # 30 minutes
+                data_cache.clear_old()
+                price_cache.clear_old()
+                last_cache_cleanup = time.time()
+                logger.info("Cache cleanup completed")
             
             # Send alive notifications
             if is_alive_check_time():
@@ -880,20 +915,46 @@ def main_trading_loop():
                 time.sleep(CHECK_INTERVAL)
                 continue
             
-            logger.info(f"[{current_time.strftime('%H:%M:%S')}] Starting batch analysis...")
+            logger.info(f"[{current_time.strftime('%H:%M:%S')}] Starting batch analysis of {len(TICKERS)} stocks...")
             
-            # Analyze all stocks in batches
-            results = analyze_all_stocks_batched()
+            # Filter out failed tickers for processing
+            active_tickers = [t for t in TICKERS if t not in memory.failed_tickers]
+            logger.info(f"Processing {len(active_tickers)} active tickers ({len(memory.failed_tickers)} failed)")
             
-            # Log batch summary
-            successful = len([r for r in results if r.get('error') is None])
-            errors = len([r for r in results if r.get('error') is not None])
-            actions = len([r for r in results if r.get('action_taken', 'NONE') != 'NONE'])
+            # Split tickers into batches
+            ticker_batches = [active_tickers[i:i + BATCH_SIZE] for i in range(0, len(active_tickers), BATCH_SIZE)]
             
-            logger.info(f"Batch analysis complete: {successful} successful, {errors} errors, {actions} actions taken")
+            total_processed = 0
+            
+            # Process each batch
+            for i, batch in enumerate(ticker_batches):
+                try:
+                    logger.info(f"Processing batch {i+1}/{len(ticker_batches)} with {len(batch)} tickers...")
+                    
+                    # Process batch
+                    batch_results = process_ticker_batch(batch)
+                    
+                    # Analyze results and make trading decisions
+                    analyze_batch_results(batch_results)
+                    
+                    total_processed += len(batch_results)
+                    
+                    # Add small delay between batches to avoid rate limiting
+                    if i < len(ticker_batches) - 1:  # Don't sleep after last batch
+                        time.sleep(2)
+                    
+                except Exception as e:
+                    logger.error(f"Error processing batch {i+1}: {e}")
+                    continue
+            
+            logger.info(f"Batch processing complete. Processed {total_processed} tickers successfully")
             
             # Print detailed status table
             print_detailed_status_table()
+            
+            # Remove tickers that have failed too many times
+            if len(memory.failed_tickers) > len(TICKERS) * 0.3:  # If more than 30% failed
+                logger.warning(f"Too many failed tickers ({len(memory.failed_tickers)}). Consider reviewing ticker list.")
             
             logger.info(f"[{current_time.strftime('%H:%M:%S')}] Analysis complete. Waiting {CHECK_INTERVAL//60} minutes...")
             
@@ -904,10 +965,24 @@ def main_trading_loop():
         except Exception as e:
             logger.error(f"Error in main loop: {e}")
             send_telegram_message(f"❌ *Bot Error*\nError: {str(e)}\nBot continuing...")
-            # Cleanup memory on error
-            cleanup_memory()
         
         time.sleep(CHECK_INTERVAL)
+
+# ============================
+# PERFORMANCE MONITORING
+# ============================
+
+def log_performance_stats():
+    """Log performance statistics"""
+    cache_hit_rate = (len(data_cache.cache) + len(price_cache.cache)) / max(1, len(TICKERS))
+    
+    logger.info("=== PERFORMANCE STATS ===")
+    logger.info(f"Active tickers: {len(TICKERS) - len(memory.failed_tickers)}/{len(TICKERS)}")
+    logger.info(f"Failed tickers: {len(memory.failed_tickers)}")
+    logger.info(f"Data cache entries: {len(data_cache.cache)}")
+    logger.info(f"Price cache entries: {len(price_cache.cache)}")
+    logger.info(f"Cache efficiency: {cache_hit_rate:.2%}")
+    logger.info("=" * 25)
 
 # ============================
 # ENTRY POINT
@@ -932,19 +1007,21 @@ def main():
         sys.exit(1)
     
     # Configuration check
-    if TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
+    if not TELEGRAM_BOT_TOKEN or TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
         logger.warning("WARNING: Telegram bot token not configured. Messages will print to console.")
     
-    # Log optimization settings
-    logger.info(f"Memory optimization settings:")
-    logger.info(f"  - Batch size: {BATCH_SIZE} stocks")
-    logger.info(f"  - Batch delay: {BATCH_DELAY} seconds")
-    logger.info(f"  - Max failed attempts: {MAX_FAILED_ATTEMPTS}")
-    logger.info(f"  - Failed ticker reset limit: {FAILED_TICKER_RESET_LIMIT}")
+    if not TICKERS:
+        logger.error("No tickers configured! Set TICKERS environment variable.")
+        sys.exit(1)
+    
+    logger.info(f"Configuration loaded: {len(TICKERS)} tickers, batch size: {BATCH_SIZE}")
     
     # Print initial status table
     logger.info("Fetching initial stock data...")
     print_detailed_status_table()
+    
+    # Log performance stats
+    log_performance_stats()
     
     # Start the trading bot
     try:
@@ -957,4 +1034,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
