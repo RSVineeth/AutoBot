@@ -45,28 +45,6 @@ logger = logging.getLogger(__name__)
 # CONFIGURATION
 # ============================
 
-# # Telegram Configuration
-# TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
-# TELEGRAM_CHAT_ID = ['1012793457','1209666577']
-
-# # Trading Configuration
-# TICKERS = [
-#     "FILATFASH.NS", "SRESTHA.BO", "HARSHILAGR.BO", "GTLINFRA.NS", "ITC.NS", "OBEROIRLTY.NS",
-#     "JAMNAAUTO.NS", "KSOLVES.NS", "ADANIGREEN.NS", "TATAMOTORS.NS", "OLECTRA.NS", "ARE&M.NS",
-#     "AFFLE.NS", "BEL.NS", "SUNPHARMA.NS", "LAURUSLABS.NS", "RELIANCE.NS", "KRBL.NS", "ONGC.NS",
-#     "IDFCFIRSTB.NS", "BANKBARODA.NS", "GSFC.NS", "TCS.NS", "INFY.NS", "SVARTCORP.BO", "SWASTIVI.BO",
-#     "BTML.NS", "SULABEN.BO", "CRYSTAL.BO", "TILAK.BO", "COMFINTE.BO", "COCHINSHIP.NS", "RVNL.NS",
-#     "SHAILY.NS", "BDL.NS", "JYOTICNC.NS", "NATIONALUM.NS", "KRONOX.NS", "SAKSOFT.NS", "ARIHANTCAP.NS",
-#     "GEOJITFSL.NS", "GRAUWEIL.BO", "MCLOUD.NS", "LKPSEC.BO", "TARACHAND.NS", "CENTEXT.NS",
-#     "IRISDOREME.NS", "BLIL.BO", "RNBDENIMS.BO", "ONEPOINT.NS", "SONAMLTD.NS", "GATEWAY.NS",
-#     "RSYSTEMS.BO", "INDRAMEDCO.NS", "JYOTHYLAB.NS", "FCL.NS", "MANINFRA.NS", "GPIL.NS",
-#     "JAGSNPHARM.NS", "HSCL.NS", "JWL.NS", "BSOFT.NS", "MARKSANS.NS", "TALBROAUTO.NS", "GALLANTT.NS",
-#     "RESPONIND.NS", "IRCTC.NS", "NAM-INDIA.NS", "MONARCH.NS", "ELECON.NS", "SHANTIGEAR.NS",
-#     "JASH.NS", "GARFIBRES.NS", "VISHNU.NS", "GRSE.NS", "RITES.NS", "AEGISLOG.NS", "ZENTEC.NS",
-#     "DELHIVERY.NS", "IFCI.NS", "CDSL.NS", "NUVAMA.NS", "NEULANDLAB.NS", "GODFRYPHLP.NS",
-#     "BAJAJHFL.NS", "PIDILITIND.NS", "HBLENGINE.NS", "DLF.NS", "RKFORGE.NS"
-# ]
-
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
@@ -117,7 +95,6 @@ class AdvancedStockMemory:
         self.max_drawdown = 0.0
         self.peak_portfolio_value = 0.0
         self.shutdown_flag = False  # Flag for graceful shutdown
-
         
         # Initialize price and volume history
         for ticker in TICKERS:
@@ -129,7 +106,7 @@ class AdvancedStockMemory:
 memory = AdvancedStockMemory()
 
 # ============================
-# EXIT HANDLERS
+# EXIT HANDLERS (FIXED)
 # ============================
 
 def cleanup_and_exit():
@@ -141,14 +118,10 @@ def cleanup_and_exit():
     sys.exit(0)
 
 def setup_exit_handlers():
-    """Setup graceful exit handlers"""
+    """Setup graceful exit handlers - FIXED VERSION"""
     def signal_handler(sig, frame):
         cleanup_and_exit()
     
-    # signal.signal(signal.SIGINT, signal_handler)
-    # signal.signal(signal.SIGTERM, signal_handler)
-    # atexit.register(print_final_summary)
-
     try:
         # Only set up signal handlers if we're in the main thread
         if threading.current_thread() is threading.main_thread():
@@ -193,7 +166,7 @@ def send_telegram_message(message: str):
     if not TELEGRAM_BOT_TOKEN or TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
         print(f"[TELEGRAM] {message}")
         return
-
+    
     # Parse TELEGRAM_CHAT_ID if it's a string
     chat_ids = []
     if isinstance(TELEGRAM_CHAT_ID, str):
@@ -202,7 +175,7 @@ def send_telegram_message(message: str):
         chat_ids = TELEGRAM_CHAT_ID
     else:
         chat_ids = [str(TELEGRAM_CHAT_ID)]
-
+    
     for chat_id in chat_ids:
         try:
             url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -331,84 +304,6 @@ def calculate_advanced_indicators(df: pd.DataFrame) -> Dict:
         print(f"Error calculating advanced indicators: {e}")
         return {}
 
-# def calculate_signal_strength(ticker: str, indicators: Dict, current_price: float) -> float:
-#     """Calculate overall signal strength (0-100)"""
-#     try:
-#         if not indicators:
-#             return 0.0
-        
-#         strength_components = []
-        
-#         # Trend strength (30% weight)
-#         sma_20 = safe_extract(indicators.get('sma_20'))
-#         sma_50 = safe_extract(indicators.get('sma_50'))
-#         ema_12 = safe_extract(indicators.get('ema_12'))
-#         ema_26 = safe_extract(indicators.get('ema_26'))
-        
-#         if all([sma_20, sma_50, ema_12, ema_26]):
-#             trend_score = 0
-#             if current_price > sma_20 > sma_50:  # Strong uptrend
-#                 trend_score += 25
-#             if ema_12 > ema_26:  # EMA bullish crossover
-#                 trend_score += 15
-#             if current_price > sma_20:  # Above short-term MA
-#                 trend_score += 10
-#             strength_components.append(min(trend_score, 30))
-        
-#         # Momentum strength (25% weight)
-#         rsi = safe_extract(indicators.get('rsi_14'))
-#         macd = safe_extract(indicators.get('macd'))
-#         macd_signal = safe_extract(indicators.get('macd_signal'))
-        
-#         if rsi and macd and macd_signal:
-#             momentum_score = 0
-#             if 30 < rsi < 70:  # RSI in good range
-#                 momentum_score += 15
-#             if macd > macd_signal and macd > 0:  # MACD bullish
-#                 momentum_score += 10
-#             strength_components.append(min(momentum_score, 25))
-        
-#         # Volume strength (20% weight)
-#         volume_sma = safe_extract(indicators.get('volume_sma_10'))
-#         if volume_sma and ticker in memory.volume_history and len(memory.volume_history[ticker]) > 0:
-#             current_volume = memory.volume_history[ticker][-1]
-#             volume_score = 0
-#             if current_volume > volume_sma * MIN_VOLUME_SPIKE:  # Volume spike
-#                 volume_score += 20
-#             elif current_volume > volume_sma * 1.2:  # Good volume
-#                 volume_score += 10
-#             strength_components.append(min(volume_score, 20))
-        
-#         # Volatility check (15% weight)
-#         atr = safe_extract(indicators.get('atr_14'))
-#         volatility_ratio = safe_extract(indicators.get('volatility_ratio'))
-#         if atr and volatility_ratio:
-#             volatility_score = 0
-#             if volatility_ratio < 1.5:  # Low volatility is good
-#                 volatility_score += 15
-#             elif volatility_ratio < 2.0:
-#                 volatility_score += 10
-#             strength_components.append(min(volatility_score, 15))
-        
-#         # Support/Resistance (10% weight)
-#         bb_lower = safe_extract(indicators.get('bb_lower'))
-#         bb_upper = safe_extract(indicators.get('bb_upper'))
-#         if bb_lower and bb_upper:
-#             sr_score = 0
-#             if current_price > bb_lower and current_price < bb_upper:  # Within bands
-#                 sr_score += 5
-#             if current_price > bb_lower * 1.02:  # Above support with buffer
-#                 sr_score += 5
-#             strength_components.append(min(sr_score, 10))
-        
-#         # Calculate weighted average
-#         total_strength = sum(strength_components)
-#         return min(total_strength, 100.0)
-        
-#     except Exception as e:
-#         print(f"Error calculating signal strength for {ticker}: {e}")
-#         return 0.0
-
 def calculate_signal_strength(ticker: str, indicators: Dict, current_price: float) -> float:
     """Calculate overall signal strength (0-100)"""
     try:
@@ -530,47 +425,6 @@ def calculate_market_sentiment() -> str:
     except Exception as e:
         print(f"Error calculating market sentiment: {e}")
         return 'NEUTRAL'
-
-# def safe_extract(arr, default=None):
-#     """Safely extract last value from numpy array"""
-#     if arr is None or len(arr) == 0:
-#         return default
-#     val = arr[-1]
-#     return float(val) if not np.isnan(val) else default
-
-# def safe_extract(value):
-#     """Safely extract a numeric value from various data types"""
-#     if value is None:
-#         return None
-    
-#     try:
-#         # Handle pandas Series
-#         if hasattr(value, 'iloc'):
-#             if len(value) > 0:
-#                 return float(value.iloc[-1])
-#             else:
-#                 return None
-        
-#         # Handle numpy arrays
-#         elif hasattr(value, 'shape'):
-#             if value.shape[0] > 0:
-#                 return float(value[-1])
-#             else:
-#                 return None
-        
-#         # Handle lists
-#         elif isinstance(value, (list, tuple)):
-#             if len(value) > 0:
-#                 return float(value[-1])
-#             else:
-#                 return None
-        
-#         # Handle scalar values
-#         else:
-#             return float(value)
-            
-#     except (ValueError, TypeError, IndexError):
-#         return None
 
 def safe_extract(value, fallback=None):
     """
@@ -1047,10 +901,10 @@ def has_earnings_soon(ticker: str) -> bool:
 def analyze_stock_advanced(ticker: str):
     """Advanced stock analysis with comprehensive signal generation"""
     try:
-        # Check shutdown flag        
+        # Check shutdown flag
         if memory.shutdown_flag:
             return
-        
+            
         # Fetch enhanced historical data
         historical_df = get_stock_data(ticker, period="6mo")
         if historical_df is None or historical_df.empty:
@@ -1251,7 +1105,7 @@ def main_advanced_trading_loop():
             # Check shutdown flag
             if memory.shutdown_flag:
                 break
-
+                
             current_time = datetime.now()
             loop_count += 1
             
@@ -1277,11 +1131,11 @@ def main_advanced_trading_loop():
                 analyze_stock_advanced(ticker)
                 print("✓")
                 time.sleep(2)  # Rate limiting
-
+            
             # Check shutdown flag after analysis
             if memory.shutdown_flag:
                 break
-
+                
             # Update market sentiment
             memory.market_sentiment = calculate_market_sentiment()
             
@@ -1314,51 +1168,6 @@ def main_advanced_trading_loop():
         
         time.sleep(CHECK_INTERVAL)
 
-
-# if __name__ == "__main__":
-#     # Set up exit handlers first
-#     setup_exit_handlers()
-    
-#     # Verify required libraries
-#     try:
-#         import talib
-#         from tabulate import tabulate
-#         print("✅ All required libraries verified")
-#     except ImportError as e:
-#         if 'talib' in str(e):
-#             print("ERROR: TA-Lib not installed. Install with: pip install TA-Lib")
-#             print("On Windows, you might need to download the wheel from: https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib")
-#         elif 'tabulate' in str(e):
-#             print("ERROR: tabulate not installed. Install with: pip install tabulate")
-#         sys.exit(1)
-    
-#     # Configuration check
-#     if TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
-#         print("⚠️  WARNING: Telegram bot token not configured. Messages will print to console.")
-    
-#     print("🔧 Advanced Configuration:")
-#     print(f"   📊 Monitoring {len(TICKERS)} stocks")
-#     print(f"   ⏰ Check interval: {CHECK_INTERVAL//60} minutes")
-#     print(f"   📈 ATR Multiplier: {ATR_MULTIPLIER}")
-#     print(f"   🎯 RSI Range: {RSI_OVERSOLD}-{RSI_OVERBOUGHT}")
-#     print(f"   📊 Volume Spike Threshold: {MIN_VOLUME_SPIKE}x")
-#     print(f"   💪 Signal Strength Threshold: {STRENGTH_THRESHOLD}")
-    
-#     # Print initial advanced status table
-#     print("🔄 Initializing advanced stock analysis...")
-#     try:
-#         print_advanced_status_table()
-#     except Exception as e:
-#         print(f"Error in initial analysis: {e}")
-    
-#     # Start the advanced trading bot
-#     try:
-#         main_advanced_trading_loop()
-#     except Exception as e:
-#         print(f"Fatal error: {e}")
-#         cleanup_and_exit()
-#     finally:
-#         print_final_summary()
 
 def main():
     """Main entry point for the advanced trading bot"""
