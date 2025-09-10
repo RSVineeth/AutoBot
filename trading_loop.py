@@ -16,10 +16,31 @@ import sys
 from collections import deque
 import statistics
 import os
+import logging
 
 
 warnings.filterwarnings('ignore')
 
+logger = logging.getLogger(__name__)
+
+# Suppress noisy external library logs
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("yfinance").disabled = True
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout),  # Console output
+        logging.FileHandler('advanced_trading_bot.log', mode='a')  # File output
+    ]
+)
+
+# Create logger instance
+logger = logging.getLogger(__name__)
 # ============================
 # CONFIGURATION
 # ============================
@@ -1253,11 +1274,54 @@ def main_advanced_trading_loop():
         
         time.sleep(CHECK_INTERVAL)
 
-# ============================
-# ENTRY POINT
-# ============================
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
+#     # Set up exit handlers first
+#     setup_exit_handlers()
+    
+#     # Verify required libraries
+#     try:
+#         import talib
+#         from tabulate import tabulate
+#         print("✅ All required libraries verified")
+#     except ImportError as e:
+#         if 'talib' in str(e):
+#             print("ERROR: TA-Lib not installed. Install with: pip install TA-Lib")
+#             print("On Windows, you might need to download the wheel from: https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib")
+#         elif 'tabulate' in str(e):
+#             print("ERROR: tabulate not installed. Install with: pip install tabulate")
+#         sys.exit(1)
+    
+#     # Configuration check
+#     if TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
+#         print("⚠️  WARNING: Telegram bot token not configured. Messages will print to console.")
+    
+#     print("🔧 Advanced Configuration:")
+#     print(f"   📊 Monitoring {len(TICKERS)} stocks")
+#     print(f"   ⏰ Check interval: {CHECK_INTERVAL//60} minutes")
+#     print(f"   📈 ATR Multiplier: {ATR_MULTIPLIER}")
+#     print(f"   🎯 RSI Range: {RSI_OVERSOLD}-{RSI_OVERBOUGHT}")
+#     print(f"   📊 Volume Spike Threshold: {MIN_VOLUME_SPIKE}x")
+#     print(f"   💪 Signal Strength Threshold: {STRENGTH_THRESHOLD}")
+    
+#     # Print initial advanced status table
+#     print("🔄 Initializing advanced stock analysis...")
+#     try:
+#         print_advanced_status_table()
+#     except Exception as e:
+#         print(f"Error in initial analysis: {e}")
+    
+#     # Start the advanced trading bot
+#     try:
+#         main_advanced_trading_loop()
+#     except Exception as e:
+#         print(f"Fatal error: {e}")
+#         cleanup_and_exit()
+#     finally:
+#         print_final_summary()
+
+def main():
+    """Main entry point for the advanced trading bot"""
     # Set up exit handlers first
     setup_exit_handlers()
     
@@ -1265,39 +1329,43 @@ if __name__ == "__main__":
     try:
         import talib
         from tabulate import tabulate
-        print("✅ All required libraries verified")
+        logger.info("All required libraries verified")
     except ImportError as e:
         if 'talib' in str(e):
-            print("ERROR: TA-Lib not installed. Install with: pip install TA-Lib")
-            print("On Windows, you might need to download the wheel from: https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib")
+            logger.error("TA-Lib not installed. Install with: pip install TA-Lib")
+            logger.error("On Windows, you might need to download the wheel from: https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib")
         elif 'tabulate' in str(e):
-            print("ERROR: tabulate not installed. Install with: pip install tabulate")
+            logger.error("tabulate not installed. Install with: pip install tabulate")
         sys.exit(1)
     
     # Configuration check
-    if TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
-        print("⚠️  WARNING: Telegram bot token not configured. Messages will print to console.")
+    if not TELEGRAM_BOT_TOKEN or TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
+        logger.warning("WARNING: Telegram bot token not configured. Messages will print to console.")
     
-    print("🔧 Advanced Configuration:")
-    print(f"   📊 Monitoring {len(TICKERS)} stocks")
-    print(f"   ⏰ Check interval: {CHECK_INTERVAL//60} minutes")
-    print(f"   📈 ATR Multiplier: {ATR_MULTIPLIER}")
-    print(f"   🎯 RSI Range: {RSI_OVERSOLD}-{RSI_OVERBOUGHT}")
-    print(f"   📊 Volume Spike Threshold: {MIN_VOLUME_SPIKE}x")
-    print(f"   💪 Signal Strength Threshold: {STRENGTH_THRESHOLD}")
+    # Log advanced configuration settings
+    logger.info("Advanced Trading Bot Configuration:")
+    logger.info(f"  - Monitoring {len(TICKERS)} stocks")
+    logger.info(f"  - Check interval: {CHECK_INTERVAL//60} minutes")
+    logger.info(f"  - ATR Multiplier: {ATR_MULTIPLIER}")
+    logger.info(f"  - RSI Range: {RSI_OVERSOLD}-{RSI_OVERBOUGHT}")
+    logger.info(f"  - Volume Spike Threshold: {MIN_VOLUME_SPIKE}x")
+    logger.info(f"  - Signal Strength Threshold: {STRENGTH_THRESHOLD}")
     
     # Print initial advanced status table
-    print("🔄 Initializing advanced stock analysis...")
+    logger.info("Initializing advanced stock analysis...")
     try:
         print_advanced_status_table()
     except Exception as e:
-        print(f"Error in initial analysis: {e}")
+        logger.error(f"Error in initial analysis: {e}")
     
     # Start the advanced trading bot
     try:
         main_advanced_trading_loop()
     except Exception as e:
-        print(f"Fatal error: {e}")
+        logger.error(f"Fatal error: {e}")
         cleanup_and_exit()
     finally:
         print_final_summary()
+
+if __name__ == "__main__":
+    main()
