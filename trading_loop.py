@@ -129,8 +129,8 @@ CORRELATION_THRESHOLD = 0.7  # Market correlation threshold
 STRENGTH_THRESHOLD = 65  # Relative strength threshold
 
 # Market Hours (IST)
-MARKET_START = "00:15"
-MARKET_END = "23:30"
+MARKET_START = "09:00"
+MARKET_END = "16:00"
 ALIVE_CHECK_MORNING = "09:15"
 ALIVE_CHECK_EVENING = "15:00"
 
