@@ -17,7 +17,7 @@ from collections import deque
 import statistics
 import os
 import logging
-import json  
+# import json  
 
 
 
@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 # TELEGRAM_CHAT_ID = ['1012793457','1209666577']
 
 # Trading Configuration
-TICKERS = [
+# TICKERS = [
 #     "FILATFASH.NS", "SRESTHA.BO", "HARSHILAGR.BO", "GTLINFRA.NS", "ITC.NS", "OBEROIRLTY.NS",
 #     "JAMNAAUTO.NS", "KSOLVES.NS", "ADANIGREEN.NS", "TATAMOTORS.NS", "OLECTRA.NS", "ARE&M.NS",
 #     "AFFLE.NS", "BEL.NS", "SUNPHARMA.NS", "LAURUSLABS.NS", "RELIANCE.NS", "KRBL.NS", "ONGC.NS",
