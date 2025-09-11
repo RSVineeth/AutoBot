@@ -17,6 +17,8 @@ from collections import deque
 import statistics
 import os
 import logging
+import json  
+
 
 
 warnings.filterwarnings('ignore')
@@ -35,7 +37,7 @@ logging.basicConfig(
     format='%(asctime)s [%(levelname)s] %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),  # Console output
-        logging.FileHandler('advanced_trading_bot.log', mode='a')  # File output
+        logging.FileHandler('advanced_trading_bot.log', mode='a', encoding='utf-8')  # File output
     ]
 )
 
@@ -45,12 +47,12 @@ logger = logging.getLogger(__name__)
 # CONFIGURATION
 # ============================
 
-# # Telegram Configuration
+# Telegram Configuration
 # TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
 # TELEGRAM_CHAT_ID = ['1012793457','1209666577']
 
-# # Trading Configuration
-# TICKERS = [
+# Trading Configuration
+TICKERS = [
 #     "FILATFASH.NS", "SRESTHA.BO", "HARSHILAGR.BO", "GTLINFRA.NS", "ITC.NS", "OBEROIRLTY.NS",
 #     "JAMNAAUTO.NS", "KSOLVES.NS", "ADANIGREEN.NS", "TATAMOTORS.NS", "OLECTRA.NS", "ARE&M.NS",
 #     "AFFLE.NS", "BEL.NS", "SUNPHARMA.NS", "LAURUSLABS.NS", "RELIANCE.NS", "KRBL.NS", "ONGC.NS",
@@ -67,6 +69,39 @@ logger = logging.getLogger(__name__)
 #     "BAJAJHFL.NS", "PIDILITIND.NS", "HBLENGINE.NS", "DLF.NS", "RKFORGE.NS"
 # ]
 
+# [
+#     "SRESTHA.BO",
+#     "ITC.NS",
+#     "JAMNAAUTO.NS",
+#     "KSOLVES.NS",
+#     "ADANIGREEN.NS",
+#     "TATAMOTORS.NS",
+#     "OLECTRA.NS",
+#     "ARE&M.NS",
+#     "AFFLE.NS",
+#     "BEL.NS",
+#     "LAURUSLABS.NS",
+#     "IDFCFIRSTB.NS",
+#     "GSFC.NS",
+#     "INFY.NS",
+#     "BTML.NS",
+#     "CRYSTAL.BO",
+#     "TILAK.BO",
+#     "ARIHANTCAP.NS",
+#     "LKPSEC.BO",
+#     "CENTEXT.NS",
+#     "RNBDENIMS.BO",
+#     "RSYSTEMS.BO",
+#     "INDRAMEDCO.NS",
+#     "JAGSNPHARM.NS",
+#     "HSCL.NS",
+#     "TALBROAUTO.NS",
+#     "GALLANTT.NS",
+#     "ELECON.NS",
+#     "ZENTEC.NS"
+# ]
+
+
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
@@ -76,9 +111,15 @@ TICKERS = tickers_str.split(",") if tickers_str else []
 
 CHECK_INTERVAL = 60 * 5  # 5 minutes
 SHARES_TO_BUY = 2
-ATR_MULTIPLIER = 2.0  # Increased for better risk management
-RSI_OVERSOLD = 25     # More strict oversold
-RSI_OVERBOUGHT = 75   # More strict overbought
+ATR_MULTIPLIER = 2.5 # 2.0  # Increased for better risk management
+RSI_OVERSOLD = 20 # 25     # More strict oversold
+RSI_OVERBOUGHT = 80 # 75   # More strict overbought
+
+# NEW: Cooldown and risk management settings
+TRADE_COOLDOWN_MINUTES = 30  # Minimum time between trades for same ticker
+MAX_CONSECUTIVE_LOSSES = 3   # Stop trading ticker after consecutive losses
+MIN_HOLDING_MINUTES = 15     # Minimum holding period
+MAX_DAILY_TRADES = 20        # Maximum trades per day
 
 # Advanced Configuration
 MIN_VOLUME_SPIKE = 1.8  # Volume spike threshold
@@ -97,17 +138,147 @@ ALIVE_CHECK_EVENING = "15:00"
 # GLOBAL VARIABLES
 # ============================
 
-class AdvancedStockMemory:
+# class AdvancedStockMemory:
+#     def __init__(self):
+#         self.holdings = {}  # {ticker: {'shares': int, 'entry_price': float, 'entry_time': datetime}}
+#         self.sell_thresholds = {}  # {ticker: float}
+#         self.highest_prices = {}  # {ticker: float}
+#         self.alerts_sent = {}  # {ticker: {'52w_high': bool, 'breakout': bool, 'support': bool}}
+#         self.last_action_status = {}  # {ticker: 'HOLD'/'WAIT'/'BUY_SIGNAL'/'SELL_SIGNAL'}
+#         self.price_history = {}  # {ticker: deque of last 20 prices}
+#         self.volume_history = {}  # {ticker: deque of last 20 volumes}
+#         self.signal_strength = {}  # {ticker: float (0-100)}
+#         self.market_sentiment = 'NEUTRAL'  # 'BULLISH', 'BEARISH', 'NEUTRAL'
+#         self.correlation_matrix = {}
+#         self.last_alive_check = None
+#         self.session_start_time = datetime.now()
+#         self.total_trades = 0
+#         self.profitable_trades = 0
+#         self.total_pnl = 0.0
+#         self.max_drawdown = 0.0
+#         self.peak_portfolio_value = 0.0
+#         self.shutdown_flag = False  # Flag for graceful shutdown
+
+        
+#         # Initialize price and volume history
+#         for ticker in TICKERS:
+#             self.price_history[ticker] = deque(maxlen=20)
+#             self.volume_history[ticker] = deque(maxlen=20)
+#             self.alerts_sent[ticker] = {'52w_high': False, 'breakout': False, 'support': False}
+#             self.signal_strength[ticker] = 0.0
+
+# memory = AdvancedStockMemory()
+
+# class PersistentStockMemory:
+#     def __init__(self, persistence_file="trading_memory.json"):
+#         self.persistence_file = persistence_file
+#         self.holdings = {}
+#         self.sell_thresholds = {}
+#         self.highest_prices = {}
+#         self.alerts_sent = {}
+#         self.last_action_status = {}
+#         self.price_history = {}
+#         self.volume_history = {}
+#         self.signal_strength = {}
+#         self.market_sentiment = 'NEUTRAL'
+#         self.correlation_matrix = {}
+#         self.last_alive_check = None
+#         self.session_start_time = datetime.now()
+#         self.total_trades = 0
+#         self.profitable_trades = 0
+#         self.total_pnl = 0.0
+#         self.max_drawdown = 0.0
+#         self.peak_portfolio_value = 0.0
+#         self.shutdown_flag = False
+        
+#         # NEW: Trade cooldown tracking
+#         self.trade_cooldowns = {}  # {ticker: last_trade_time}
+#         self.consecutive_losses = {}  # {ticker: count}
+        
+#         # Load existing data
+#         self.load_memory()
+        
+#         # Initialize for new tickers
+#         for ticker in TICKERS:
+#             if ticker not in self.price_history:
+#                 self.price_history[ticker] = deque(maxlen=20)
+#                 self.volume_history[ticker] = deque(maxlen=20)
+#                 self.alerts_sent[ticker] = {'52w_high': False, 'breakout': False, 'support': False}
+#                 self.signal_strength[ticker] = 0.0
+#                 self.trade_cooldowns[ticker] = None
+#                 self.consecutive_losses[ticker] = 0
+
+#     def save_memory(self):
+#         """Save memory state to file"""
+#         try:
+#             memory_data = {
+#                 'holdings': self.holdings,
+#                 'sell_thresholds': self.sell_thresholds,
+#                 'highest_prices': self.highest_prices,
+#                 'alerts_sent': self.alerts_sent,
+#                 'total_trades': self.total_trades,
+#                 'profitable_trades': self.profitable_trades,
+#                 'total_pnl': self.total_pnl,
+#                 'max_drawdown': self.max_drawdown,
+#                 'peak_portfolio_value': self.peak_portfolio_value,
+#                 'trade_cooldowns': {k: v.isoformat() if v else None for k, v in self.trade_cooldowns.items()},
+#                 'consecutive_losses': self.consecutive_losses,
+#                 'last_save': datetime.now().isoformat()
+#             }
+            
+#             with open(self.persistence_file, 'w') as f:
+#                 json.dump(memory_data, f, indent=2, default=str)
+            
+#             logger.info(f"Memory saved successfully to {self.persistence_file}")
+            
+#         except Exception as e:
+#             logger.error(f"Error saving memory: {e}")
+
+#     def load_memory(self):
+#         """Load memory state from file"""
+#         try:
+#             if os.path.exists(self.persistence_file):
+#                 with open(self.persistence_file, 'r') as f:
+#                     memory_data = json.load(f)
+                
+#                 self.holdings = memory_data.get('holdings', {})
+#                 self.sell_thresholds = memory_data.get('sell_thresholds', {})
+#                 self.highest_prices = memory_data.get('highest_prices', {})
+#                 self.alerts_sent = memory_data.get('alerts_sent', {})
+#                 self.total_trades = memory_data.get('total_trades', 0)
+#                 self.profitable_trades = memory_data.get('profitable_trades', 0)
+#                 self.total_pnl = memory_data.get('total_pnl', 0.0)
+#                 self.max_drawdown = memory_data.get('max_drawdown', 0.0)
+#                 self.peak_portfolio_value = memory_data.get('peak_portfolio_value', 0.0)
+#                 self.consecutive_losses = memory_data.get('consecutive_losses', {})
+                
+#                 # Load cooldown times
+#                 cooldowns = memory_data.get('trade_cooldowns', {})
+#                 self.trade_cooldowns = {}
+#                 for ticker, time_str in cooldowns.items():
+#                     if time_str:
+#                         self.trade_cooldowns[ticker] = datetime.fromisoformat(time_str)
+#                     else:
+#                         self.trade_cooldowns[ticker] = None
+                
+#                 logger.info(f"Memory loaded successfully from {self.persistence_file}")
+                
+#         except Exception as e:
+#             logger.error(f"Error loading memory: {e}")
+
+# memory = PersistentStockMemory()
+
+class InMemoryStockMemory:
     def __init__(self):
-        self.holdings = {}  # {ticker: {'shares': int, 'entry_price': float, 'entry_time': datetime}}
-        self.sell_thresholds = {}  # {ticker: float}
-        self.highest_prices = {}  # {ticker: float}
-        self.alerts_sent = {}  # {ticker: {'52w_high': bool, 'breakout': bool, 'support': bool}}
-        self.last_action_status = {}  # {ticker: 'HOLD'/'WAIT'/'BUY_SIGNAL'/'SELL_SIGNAL'}
-        self.price_history = {}  # {ticker: deque of last 20 prices}
-        self.volume_history = {}  # {ticker: deque of last 20 volumes}
-        self.signal_strength = {}  # {ticker: float (0-100)}
-        self.market_sentiment = 'NEUTRAL'  # 'BULLISH', 'BEARISH', 'NEUTRAL'
+        self.holdings = {}
+        self.sell_thresholds = {}
+        self.highest_prices = {}
+        self.alerts_sent = {}
+        self.last_action_status = {}
+        self.price_history = {}
+        self.volume_history = {}
+        self.signal_strength = {}
+        self.market_sentiment = 'NEUTRAL'
         self.correlation_matrix = {}
         self.last_alive_check = None
         self.session_start_time = datetime.now()
@@ -116,17 +287,93 @@ class AdvancedStockMemory:
         self.total_pnl = 0.0
         self.max_drawdown = 0.0
         self.peak_portfolio_value = 0.0
-        self.shutdown_flag = False  # Flag for graceful shutdown
-
+        self.shutdown_flag = False
         
-        # Initialize price and volume history
+        # Enhanced tracking without persistence
+        self.trade_cooldowns = {}  # {ticker: last_trade_time}
+        self.consecutive_losses = {}  # {ticker: count}
+        self.last_trade_time = {}  # {ticker: datetime}
+        self.ticker_blacklist = set()  # Tickers to avoid
+        
+        # Initialize for all tickers
         for ticker in TICKERS:
             self.price_history[ticker] = deque(maxlen=20)
             self.volume_history[ticker] = deque(maxlen=20)
             self.alerts_sent[ticker] = {'52w_high': False, 'breakout': False, 'support': False}
             self.signal_strength[ticker] = 0.0
+            self.trade_cooldowns[ticker] = None
+            self.consecutive_losses[ticker] = 0
+            self.last_trade_time[ticker] = None
 
-memory = AdvancedStockMemory()
+
+def is_in_cooldown(ticker: str) -> bool:
+    """Check if ticker is in trading cooldown"""
+    if ticker not in memory.trade_cooldowns or memory.trade_cooldowns[ticker] is None:
+        return False
+    
+    cooldown_end = memory.trade_cooldowns[ticker] + timedelta(minutes=TRADE_COOLDOWN_MINUTES)
+    return datetime.now() < cooldown_end
+
+def should_skip_ticker(ticker: str) -> tuple[bool, str]:
+    """Enhanced ticker filtering"""
+    
+    # Check if ticker is in our approved list
+    if ticker not in TICKERS:
+        return True, "Not in approved ticker list"
+    
+    # Check blacklist
+    if ticker in memory.ticker_blacklist:
+        return True, "Blacklisted ticker"
+    
+    # Check cooldown
+    if is_in_cooldown(ticker):
+        remaining_minutes = int(((memory.trade_cooldowns[ticker] + 
+                                timedelta(minutes=TRADE_COOLDOWN_MINUTES)) - 
+                               datetime.now()).total_seconds() / 60)
+        return True, f"Cooldown ({remaining_minutes}min left)"
+    
+    # Check consecutive losses
+    if memory.consecutive_losses.get(ticker, 0) >= MAX_CONSECUTIVE_LOSSES:
+        return True, f"Too many losses ({memory.consecutive_losses[ticker]})"
+    
+    # Check daily trade limit
+    if memory.total_trades >= MAX_DAILY_TRADES:
+        return True, "Daily limit reached"
+    
+    return False, "OK"
+
+memory = InMemoryStockMemory()
+
+
+def is_in_cooldown(ticker: str) -> bool:
+    """Check if ticker is in trading cooldown"""
+    if ticker not in memory.trade_cooldowns or memory.trade_cooldowns[ticker] is None:
+        return False
+    
+    cooldown_end = memory.trade_cooldowns[ticker] + timedelta(minutes=TRADE_COOLDOWN_MINUTES)
+    return datetime.now() < cooldown_end
+
+def should_skip_ticker(ticker: str) -> Tuple[bool, str]:
+    """Check if ticker should be skipped due to risk management rules"""
+    
+    # Check cooldown
+    if is_in_cooldown(ticker):
+        remaining_minutes = ((memory.trade_cooldowns[ticker] + timedelta(minutes=TRADE_COOLDOWN_MINUTES)) - datetime.now()).seconds // 60
+        return True, f"Cooldown ({remaining_minutes}min left)"
+    
+    # Check consecutive losses
+    if memory.consecutive_losses.get(ticker, 0) >= MAX_CONSECUTIVE_LOSSES:
+        return True, f"Too many losses ({memory.consecutive_losses[ticker]})"
+    
+    # Check daily trade limit
+    if memory.total_trades >= MAX_DAILY_TRADES:
+        return True, "Daily limit reached"
+    
+    # Check if ticker is even in our list
+    if ticker not in TICKERS:
+        return True, "Not in ticker list"
+    
+    return False, "OK"
 
 # ============================
 # EXIT HANDLERS
@@ -176,7 +423,7 @@ def print_final_summary():
         print(f"Total Trades: {memory.total_trades}")
         print(f"Profitable Trades: {memory.profitable_trades}")
         print(f"Win Rate: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "Win Rate: 0%")
-        print(f"Total P&L: ₹{memory.total_pnl:.2f}")
+        print(f"Total P&L: Rs.{memory.total_pnl:.2f}")
         print(f"Max Drawdown: {memory.max_drawdown:.2f}%")
         print(f"Active Positions: {active_positions}")
         print(f"Market Sentiment: {memory.market_sentiment}")
@@ -223,12 +470,12 @@ def send_alive_notification():
     active_positions = sum(1 for ticker in memory.holdings if memory.holdings[ticker].get('shares', 0) > 0)
     strong_signals = sum(1 for strength in memory.signal_strength.values() if strength > 70)
     
-    message = f"✅ *Advanced Stock Bot ALIVE* - {current_time}\n"
-    message += f"📊 Monitoring {len(TICKERS)} stocks\n"
-    message += f"💼 Active positions: {active_positions}\n"
-    message += f"🎯 Strong signals: {strong_signals}\n"
-    message += f"📈 Market sentiment: {memory.market_sentiment}\n"
-    message += f"💰 Session P&L: ₹{memory.total_pnl:.2f}"
+    message = f" *Advanced Stock Bot ALIVE* - {current_time}\n"
+    message += f" Monitoring {len(TICKERS)} stocks\n"
+    message += f" Active positions: {active_positions}\n"
+    message += f" Strong signals: {strong_signals}\n"
+    message += f" Market sentiment: {memory.market_sentiment}\n"
+    message += f" Session P&L: Rs.{memory.total_pnl:.2f}"
     
     send_telegram_message(message)
     memory.last_alive_check = datetime.now()
@@ -687,148 +934,413 @@ def get_realtime_data(ticker: str) -> Optional[Dict]:
 # ADVANCED TRADING LOGIC
 # ============================
 
+# def advanced_should_buy(ticker: str, indicators: Dict, current_price: float, realtime_data: Dict) -> Tuple[bool, str]:
+#     """Advanced buy signal detection"""
+#     try:
+#         if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
+#             return False, "Already holding"
+        
+#         # Market sentiment filter
+#         if memory.market_sentiment == 'BEARISH':
+#             return False, "Bearish market"
+        
+#         # Get signal strength
+#         strength = memory.signal_strength.get(ticker, 0)
+#         if strength < 65:
+#             return False, f"Signal too weak ({strength:.1f})"
+        
+#         # Multiple condition checks
+#         buy_conditions = []
+#         reasons = []
+        
+#         # 1. Trend confirmation
+#         sma_20 = safe_extract(indicators.get('sma_20'))
+#         sma_50 = safe_extract(indicators.get('sma_50'))
+#         ema_12 = safe_extract(indicators.get('ema_12'))
+#         ema_26 = safe_extract(indicators.get('ema_26'))
+        
+#         if all([sma_20, sma_50, ema_12, ema_26]):
+#             if current_price > sma_20 > sma_50 and ema_12 > ema_26:
+#                 buy_conditions.append(True)
+#                 reasons.append("Trend bullish")
+#             else:
+#                 buy_conditions.append(False)
+        
+#         # 2. RSI confirmation
+#         rsi = safe_extract(indicators.get('rsi_14'))
+#         if rsi and 25 < rsi < 65:  # Not overbought, slight oversold OK
+#             buy_conditions.append(True)
+#             reasons.append(f"RSI good ({rsi:.1f})")
+#         else:
+#             buy_conditions.append(False)
+        
+#         # 3. MACD confirmation
+#         macd = safe_extract(indicators.get('macd'))
+#         macd_signal = safe_extract(indicators.get('macd_signal'))
+#         if macd and macd_signal and macd > macd_signal:
+#             buy_conditions.append(True)
+#             reasons.append("MACD bullish")
+#         else:
+#             buy_conditions.append(False)
+        
+#         # 4. Volume confirmation
+#         volume_sma = safe_extract(indicators.get('volume_sma_10'))
+#         current_volume = realtime_data.get('volume', 0)
+#         if volume_sma and current_volume > volume_sma * 1.3:
+#             buy_conditions.append(True)
+#             reasons.append("Volume spike")
+#         else:
+#             buy_conditions.append(False)
+        
+#         # 5. Volatility filter
+#         volatility_ratio = safe_extract(indicators.get('volatility_ratio'))
+#         if volatility_ratio and volatility_ratio < 2.0:
+#             buy_conditions.append(True)
+#             reasons.append("Low volatility")
+#         else:
+#             buy_conditions.append(False)
+        
+#         # 6. Bollinger Bands position
+#         bb_lower = safe_extract(indicators.get('bb_lower'))
+#         bb_upper = safe_extract(indicators.get('bb_upper'))
+#         if bb_lower and bb_upper and bb_lower < current_price < bb_upper * 0.95:
+#             buy_conditions.append(True)
+#             reasons.append("BB position good")
+#         else:
+#             buy_conditions.append(False)
+        
+#         # Need at least 4 out of 6 conditions to be true
+#         conditions_met = sum(buy_conditions)
+#         if conditions_met >= 4:
+#             return True, f"Strong buy ({conditions_met}/6): " + ", ".join(reasons[:3])
+        
+#         return False, f"Insufficient conditions ({conditions_met}/6)"
+        
+#     except Exception as e:
+#         print(f"Error in advanced_should_buy for {ticker}: {e}")
+#         return False, "Error in analysis"
+
+# def advanced_should_sell(ticker: str, indicators: Dict, current_price: float) -> Tuple[bool, str]:
+#     """Advanced sell signal detection"""
+#     if ticker not in memory.holdings or memory.holdings[ticker].get('shares', 0) == 0:
+#         return False, "No position"
+    
+#     try:
+#         entry_price = memory.holdings[ticker].get('entry_price', 0)
+#         current_pnl = ((current_price - entry_price) / entry_price) * 100 if entry_price > 0 else 0
+        
+#         # Stop-loss check
+#         if ticker in memory.sell_thresholds and current_price <= memory.sell_thresholds[ticker]:
+#             return True, f"Stop-loss hit (PnL: {current_pnl:+.2f}%)"
+        
+#         # Profit-taking conditions
+#         if current_pnl > 8:  # 8% profit
+#             rsi = safe_extract(indicators.get('rsi_14'))
+#             if rsi and rsi > 75:
+#                 return True, f"Profit-taking (PnL: {current_pnl:+.2f}%, RSI: {rsi:.1f})"
+        
+#         # Trend reversal detection
+#         sma_20 = safe_extract(indicators.get('sma_20'))
+#         ema_12 = safe_extract(indicators.get('ema_12'))
+#         ema_26 = safe_extract(indicators.get('ema_26'))
+        
+#         if all([sma_20, ema_12, ema_26]):
+#             if current_price < sma_20 and ema_12 < ema_26:
+#                 return True, f"Trend reversal (PnL: {current_pnl:+.2f}%)"
+        
+#         # MACD bearish divergence
+#         macd = safe_extract(indicators.get('macd'))
+#         macd_signal = safe_extract(indicators.get('macd_signal'))
+#         if macd and macd_signal and macd < macd_signal and macd < 0:
+#             return True, f"MACD bearish (PnL: {current_pnl:+.2f}%)"
+        
+#         # Time-based exit (holding too long)
+#         if ticker in memory.holdings and 'entry_time' in memory.holdings[ticker]:
+#             holding_time = datetime.now() - memory.holdings[ticker]['entry_time']
+#             if holding_time.days > 5 and current_pnl < 2:  # 5 days with low profit
+#                 return True, f"Time exit (PnL: {current_pnl:+.2f}%, {holding_time.days}d)"
+        
+#         return False, f"Hold (PnL: {current_pnl:+.2f}%)"
+        
+#     except Exception as e:
+#         print(f"Error in advanced_should_sell for {ticker}: {e}")
+#         return False, "Error in sell analysis"
+
+# def execute_advanced_buy(ticker: str, current_price: float, indicators: Dict, reason: str):
+#     """Execute advanced buy order with enhanced tracking"""
+#     try:
+#         atr = safe_extract(indicators.get('atr_14'))
+#         if atr is None or atr <= 0:
+#             atr = current_price * 0.02
+        
+#         # Dynamic position sizing based on volatility
+#         volatility_ratio = safe_extract(indicators.get('volatility_ratio'), 1.0)
+#         adjusted_shares = max(1, int(SHARES_TO_BUY / volatility_ratio))
+        
+#         memory.holdings[ticker] = {
+#             'shares': adjusted_shares,
+#             'entry_price': current_price,
+#             'entry_time': datetime.now()
+#         }
+        
+#         # Dynamic stop-loss based on ATR and support levels
+#         support_level = safe_extract(indicators.get('support_1'), current_price * 0.95)
+#         atr_stop = current_price - (ATR_MULTIPLIER * atr)
+#         dynamic_stop = max(support_level, atr_stop)
+        
+#         memory.sell_thresholds[ticker] = dynamic_stop
+#         memory.highest_prices[ticker] = current_price
+        
+#         memory.total_trades += 1
+        
+#         # Enhanced buy alert
+#         symbol = ticker.replace('.NS', '').replace('.BO', '')
+#         signal_strength = memory.signal_strength.get(ticker, 0)
+#         rsi_val = safe_extract(indicators.get('rsi_14'))
+        
+#         message = f"🟢 *ADVANCED BUY SIGNAL*\n"
+#         message += f" {symbol} - Rs.{current_price:.2f}\n"
+#         message += f" Shares: {adjusted_shares} (Dynamic sizing)\n"
+#         message += f" Signal Strength: {signal_strength:.1f}/100\n"
+#         message += f" RSI: {rsi_val:.1f} | ATR: Rs.{atr:.2f}\n"
+#         message += f" Smart Stop-loss: Rs.{dynamic_stop:.2f}\n"
+#         message += f" Reason: {reason}"
+        
+#         send_telegram_message(message)
+#         print(f"[ADVANCED BUY] {symbol} @ Rs.{current_price:.2f} | Strength: {signal_strength:.1f}")
+        
+#     except Exception as e:
+#         print(f"Error executing advanced buy for {ticker}: {e}")
+
+# def execute_advanced_sell(ticker: str, current_price: float, reason: str):
+#     """Execute advanced sell order with enhanced tracking"""
+#     try:
+#         if ticker not in memory.holdings:
+#             return
+        
+#         shares = memory.holdings[ticker].get('shares', 0)
+#         entry_price = memory.holdings[ticker].get('entry_price', 0)
+#         entry_time = memory.holdings[ticker].get('entry_time', datetime.now())
+        
+#         if shares == 0:
+#             return
+        
+#         # Calculate detailed P&L
+#         total_change = (current_price - entry_price) * shares
+#         change_percent = ((current_price - entry_price) / entry_price) * 100
+#         holding_period = datetime.now() - entry_time
+        
+#         # Update session statistics
+#         memory.total_pnl += total_change
+#         if total_change > 0:
+#             memory.profitable_trades += 1
+        
+#         # Update drawdown tracking
+#         current_portfolio_value = memory.total_pnl
+#         if current_portfolio_value > memory.peak_portfolio_value:
+#             memory.peak_portfolio_value = current_portfolio_value
+#         else:
+#             drawdown = ((memory.peak_portfolio_value - current_portfolio_value) / memory.peak_portfolio_value) * 100
+#             if drawdown > memory.max_drawdown:
+#                 memory.max_drawdown = drawdown
+        
+#         # Clear position
+#         memory.holdings[ticker] = {'shares': 0, 'entry_price': 0}
+#         if ticker in memory.sell_thresholds:
+#             del memory.sell_thresholds[ticker]
+#         if ticker in memory.highest_prices:
+#             del memory.highest_prices[ticker]
+        
+#         memory.alerts_sent[ticker] = {'52w_high': False, 'breakout': False, 'support': False}
+        
+#         symbol = ticker.replace('.NS', '').replace('.BO', '')
+#         profit_emoji = "" if total_change >= 0 else ""
+#         holding_days = holding_period.days
+#         holding_hours = holding_period.seconds // 3600
+        
+#         message = f"🔴 *ADVANCED SELL SIGNAL*\n"
+#         message += f" {symbol} - Rs.{current_price:.2f}\n"
+#         message += f" Sold {shares} shares\n"
+#         message += f"{profit_emoji} P&L: Rs.{total_change:.2f} ({change_percent:+.2f}%)\n"
+#         message += f" Held: {holding_days}d {holding_hours}h\n"
+#         message += f" Reason: {reason}"
+        
+#         send_telegram_message(message)
+#         print(f"[ADVANCED SELL] {symbol} @ Rs.{current_price:.2f} | P&L: Rs.{total_change:.2f} | {reason}")
+        
+#     except Exception as e:
+#         print(f"Error executing advanced sell for {ticker}: {e}")
+
 def advanced_should_buy(ticker: str, indicators: Dict, current_price: float, realtime_data: Dict) -> Tuple[bool, str]:
-    """Advanced buy signal detection"""
+    """Improved buy signal detection with better filtering"""
     try:
+        # Risk management checks first
+        should_skip, skip_reason = should_skip_ticker(ticker)
+        if should_skip:
+            return False, skip_reason
+        
+        # Don't buy if already holding
         if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
             return False, "Already holding"
         
-        # Market sentiment filter
+        # Market sentiment filter (stricter)
         if memory.market_sentiment == 'BEARISH':
             return False, "Bearish market"
         
-        # Get signal strength
+        # Signal strength filter (increased threshold)
         strength = memory.signal_strength.get(ticker, 0)
-        if strength < 65:
+        if strength < STRENGTH_THRESHOLD:
             return False, f"Signal too weak ({strength:.1f})"
         
-        # Multiple condition checks
+        # More conservative condition checks
         buy_conditions = []
         reasons = []
         
-        # 1. Trend confirmation
+        # 1. Trend confirmation (more strict)
         sma_20 = safe_extract(indicators.get('sma_20'))
         sma_50 = safe_extract(indicators.get('sma_50'))
         ema_12 = safe_extract(indicators.get('ema_12'))
         ema_26 = safe_extract(indicators.get('ema_26'))
         
         if all([sma_20, sma_50, ema_12, ema_26]):
-            if current_price > sma_20 > sma_50 and ema_12 > ema_26:
+            # More strict trend requirements
+            if (current_price > sma_20 > sma_50 and 
+                ema_12 > ema_26 and 
+                sma_20 > sma_50 * 1.01):  # At least 1% separation
                 buy_conditions.append(True)
-                reasons.append("Trend bullish")
+                reasons.append("Strong trend")
             else:
                 buy_conditions.append(False)
         
-        # 2. RSI confirmation
+        # 2. RSI confirmation (tighter range)
         rsi = safe_extract(indicators.get('rsi_14'))
-        if rsi and 25 < rsi < 65:  # Not overbought, slight oversold OK
+        if rsi and 30 < rsi < 60:  # More conservative range
             buy_conditions.append(True)
             reasons.append(f"RSI good ({rsi:.1f})")
         else:
             buy_conditions.append(False)
         
-        # 3. MACD confirmation
+        # 3. MACD confirmation (stronger signal required)
         macd = safe_extract(indicators.get('macd'))
         macd_signal = safe_extract(indicators.get('macd_signal'))
-        if macd and macd_signal and macd > macd_signal:
+        macd_hist = safe_extract(indicators.get('macd_histogram'))
+        
+        if (macd and macd_signal and macd_hist and 
+            macd > macd_signal and macd > 0 and macd_hist > 0):
             buy_conditions.append(True)
-            reasons.append("MACD bullish")
+            reasons.append("MACD strong")
         else:
             buy_conditions.append(False)
         
-        # 4. Volume confirmation
+        # 4. Volume confirmation (higher threshold)
         volume_sma = safe_extract(indicators.get('volume_sma_10'))
         current_volume = realtime_data.get('volume', 0)
-        if volume_sma and current_volume > volume_sma * 1.3:
+        if volume_sma and current_volume > volume_sma * MIN_VOLUME_SPIKE:
             buy_conditions.append(True)
-            reasons.append("Volume spike")
+            reasons.append("High volume")
         else:
             buy_conditions.append(False)
         
-        # 5. Volatility filter
+        # 5. Volatility filter (stricter)
         volatility_ratio = safe_extract(indicators.get('volatility_ratio'))
-        if volatility_ratio and volatility_ratio < 2.0:
+        if volatility_ratio and volatility_ratio < 1.5:  # Lower threshold
             buy_conditions.append(True)
             reasons.append("Low volatility")
         else:
             buy_conditions.append(False)
         
-        # 6. Bollinger Bands position
-        bb_lower = safe_extract(indicators.get('bb_lower'))
+        # 6. Price position (not near resistance)
         bb_upper = safe_extract(indicators.get('bb_upper'))
-        if bb_lower and bb_upper and bb_lower < current_price < bb_upper * 0.95:
-            buy_conditions.append(True)
-            reasons.append("BB position good")
-        else:
-            buy_conditions.append(False)
+        bb_lower = safe_extract(indicators.get('bb_lower'))
+        if bb_lower and bb_upper:
+            # Must be in lower 70% of Bollinger Band range
+            band_range = bb_upper - bb_lower
+            price_position = (current_price - bb_lower) / band_range
+            if 0.2 < price_position < 0.7:
+                buy_conditions.append(True)
+                reasons.append("Good price position")
+            else:
+                buy_conditions.append(False)
         
-        # Need at least 4 out of 6 conditions to be true
+        # Need at least 5 out of 6 conditions to be true (stricter)
         conditions_met = sum(buy_conditions)
         if conditions_met >= 4:
-            return True, f"Strong buy ({conditions_met}/6): " + ", ".join(reasons[:3])
+            return True, f"Very strong buy ({conditions_met}/6): " + ", ".join(reasons[:3])
         
         return False, f"Insufficient conditions ({conditions_met}/6)"
         
     except Exception as e:
-        print(f"Error in advanced_should_buy for {ticker}: {e}")
+        logger.error(f"Error in improved_should_buy for {ticker}: {e}")
         return False, "Error in analysis"
 
 def advanced_should_sell(ticker: str, indicators: Dict, current_price: float) -> Tuple[bool, str]:
-    """Advanced sell signal detection"""
+    """Improved sell signal detection with better risk management"""
     if ticker not in memory.holdings or memory.holdings[ticker].get('shares', 0) == 0:
         return False, "No position"
     
     try:
         entry_price = memory.holdings[ticker].get('entry_price', 0)
+        entry_time = memory.holdings[ticker].get('entry_time')
         current_pnl = ((current_price - entry_price) / entry_price) * 100 if entry_price > 0 else 0
         
-        # Stop-loss check
+        # Parse entry_time if it's a string
+        if isinstance(entry_time, str):
+            entry_time = datetime.fromisoformat(entry_time)
+        
+        # Minimum holding period check
+        if entry_time:
+            holding_minutes = (datetime.now() - entry_time).total_seconds() / 60
+            if holding_minutes < MIN_HOLDING_MINUTES and current_pnl > -5:  # Unless major loss
+                return False, f"Min hold time ({MIN_HOLDING_MINUTES - holding_minutes:.0f}min left)"
+        
+        # Hard stop-loss check (wider than before)
         if ticker in memory.sell_thresholds and current_price <= memory.sell_thresholds[ticker]:
             return True, f"Stop-loss hit (PnL: {current_pnl:+.2f}%)"
         
-        # Profit-taking conditions
-        if current_pnl > 8:  # 8% profit
+        # Take profit conditions (higher thresholds)
+        if current_pnl > 12:  # Increased from 8%
             rsi = safe_extract(indicators.get('rsi_14'))
-            if rsi and rsi > 75:
+            if rsi and rsi > 80:  # Only at extreme overbought
                 return True, f"Profit-taking (PnL: {current_pnl:+.2f}%, RSI: {rsi:.1f})"
         
-        # Trend reversal detection
+        # Strong trend reversal only
         sma_20 = safe_extract(indicators.get('sma_20'))
         ema_12 = safe_extract(indicators.get('ema_12'))
         ema_26 = safe_extract(indicators.get('ema_26'))
         
         if all([sma_20, ema_12, ema_26]):
-            if current_price < sma_20 and ema_12 < ema_26:
-                return True, f"Trend reversal (PnL: {current_pnl:+.2f}%)"
+            # Only sell on strong reversal signals
+            if (current_price < sma_20 * 0.98 and  # 2% below SMA
+                ema_12 < ema_26 * 0.99 and         # Clear EMA crossover
+                current_pnl < -3):                 # And some loss
+                return True, f"Strong reversal (PnL: {current_pnl:+.2f}%)"
         
-        # MACD bearish divergence
-        macd = safe_extract(indicators.get('macd'))
-        macd_signal = safe_extract(indicators.get('macd_signal'))
-        if macd and macd_signal and macd < macd_signal and macd < 0:
-            return True, f"MACD bearish (PnL: {current_pnl:+.2f}%)"
-        
-        # Time-based exit (holding too long)
-        if ticker in memory.holdings and 'entry_time' in memory.holdings[ticker]:
-            holding_time = datetime.now() - memory.holdings[ticker]['entry_time']
-            if holding_time.days > 5 and current_pnl < 2:  # 5 days with low profit
+        # Time-based exit (longer holding period)
+        if entry_time:
+            holding_time = datetime.now() - entry_time
+            if holding_time.days > 10 and current_pnl < 3:  # Increased from 5 days
                 return True, f"Time exit (PnL: {current_pnl:+.2f}%, {holding_time.days}d)"
         
         return False, f"Hold (PnL: {current_pnl:+.2f}%)"
         
     except Exception as e:
-        print(f"Error in advanced_should_sell for {ticker}: {e}")
+        logger.error(f"Error in improved_should_sell for {ticker}: {e}")
         return False, "Error in sell analysis"
 
 def execute_advanced_buy(ticker: str, current_price: float, indicators: Dict, reason: str):
-    """Execute advanced buy order with enhanced tracking"""
+    """Execute buy with improved tracking and risk management"""
     try:
+        # Record trade time for cooldown
+        memory.trade_cooldowns[ticker] = datetime.now()
+        
+        # Calculate position size (more conservative)
         atr = safe_extract(indicators.get('atr_14'))
         if atr is None or atr <= 0:
             atr = current_price * 0.02
         
-        # Dynamic position sizing based on volatility
         volatility_ratio = safe_extract(indicators.get('volatility_ratio'), 1.0)
-        adjusted_shares = max(1, int(SHARES_TO_BUY / volatility_ratio))
+        # More conservative sizing
+        adjusted_shares = max(1, int(SHARES_TO_BUY / (volatility_ratio * 1.5)))
         
         memory.holdings[ticker] = {
             'shares': adjusted_shares,
@@ -836,37 +1348,38 @@ def execute_advanced_buy(ticker: str, current_price: float, indicators: Dict, re
             'entry_time': datetime.now()
         }
         
-        # Dynamic stop-loss based on ATR and support levels
-        support_level = safe_extract(indicators.get('support_1'), current_price * 0.95)
-        atr_stop = current_price - (ATR_MULTIPLIER * atr)
-        dynamic_stop = max(support_level, atr_stop)
+        # More conservative stop-loss (wider)
+        support_level = safe_extract(indicators.get('support_1'), current_price * 0.92)
+        atr_stop = current_price - (ATR_MULTIPLIER * atr)  # Now 2.5x instead of 2.0x
+        dynamic_stop = max(support_level * 0.95, atr_stop)  # 5% buffer below support
         
         memory.sell_thresholds[ticker] = dynamic_stop
         memory.highest_prices[ticker] = current_price
         
         memory.total_trades += 1
         
-        # Enhanced buy alert
+        # Save memory after trade
+        # memory.save_memory()
+        
+        # Send buy alert
         symbol = ticker.replace('.NS', '').replace('.BO', '')
         signal_strength = memory.signal_strength.get(ticker, 0)
-        rsi_val = safe_extract(indicators.get('rsi_14'))
         
-        message = f"🟢 *ADVANCED BUY SIGNAL*\n"
-        message += f"📈 {symbol} - ₹{current_price:.2f}\n"
-        message += f"💰 Shares: {adjusted_shares} (Dynamic sizing)\n"
+        message = f"🟢 *IMPROVED BUY SIGNAL*\n"
+        message += f"📈 {symbol} - Rs.{current_price:.2f}\n"
+        message += f"💰 Shares: {adjusted_shares} (Conservative sizing)\n"
         message += f"🎯 Signal Strength: {signal_strength:.1f}/100\n"
-        message += f"📊 RSI: {rsi_val:.1f} | ATR: ₹{atr:.2f}\n"
-        message += f"🛑 Smart Stop-loss: ₹{dynamic_stop:.2f}\n"
+        message += f"🛑 Stop-loss: Rs.{dynamic_stop:.2f}\n"
         message += f"💡 Reason: {reason}"
         
         send_telegram_message(message)
-        print(f"[ADVANCED BUY] {symbol} @ ₹{current_price:.2f} | Strength: {signal_strength:.1f}")
+        logger.info(f"[IMPROVED BUY] {symbol} @ Rs.{current_price:.2f} | Strength: {signal_strength:.1f}")
         
     except Exception as e:
-        print(f"Error executing advanced buy for {ticker}: {e}")
+        logger.error(f"Error executing improved buy for {ticker}: {e}")
 
 def execute_advanced_sell(ticker: str, current_price: float, reason: str):
-    """Execute advanced sell order with enhanced tracking"""
+    """Execute sell with improved tracking"""
     try:
         if ticker not in memory.holdings:
             return
@@ -878,24 +1391,27 @@ def execute_advanced_sell(ticker: str, current_price: float, reason: str):
         if shares == 0:
             return
         
-        # Calculate detailed P&L
+        # Parse entry_time if string
+        if isinstance(entry_time, str):
+            entry_time = datetime.fromisoformat(entry_time)
+        
+        # Calculate P&L
         total_change = (current_price - entry_price) * shares
         change_percent = ((current_price - entry_price) / entry_price) * 100
         holding_period = datetime.now() - entry_time
         
-        # Update session statistics
-        memory.total_pnl += total_change
-        if total_change > 0:
+        # Update consecutive loss counter
+        if total_change < 0:
+            memory.consecutive_losses[ticker] = memory.consecutive_losses.get(ticker, 0) + 1
+        else:
+            memory.consecutive_losses[ticker] = 0  # Reset on profit
             memory.profitable_trades += 1
         
-        # Update drawdown tracking
-        current_portfolio_value = memory.total_pnl
-        if current_portfolio_value > memory.peak_portfolio_value:
-            memory.peak_portfolio_value = current_portfolio_value
-        else:
-            drawdown = ((memory.peak_portfolio_value - current_portfolio_value) / memory.peak_portfolio_value) * 100
-            if drawdown > memory.max_drawdown:
-                memory.max_drawdown = drawdown
+        # Record trade time for cooldown
+        memory.trade_cooldowns[ticker] = datetime.now()
+        
+        # Update session statistics
+        memory.total_pnl += total_change
         
         # Clear position
         memory.holdings[ticker] = {'shares': 0, 'entry_price': 0}
@@ -904,25 +1420,29 @@ def execute_advanced_sell(ticker: str, current_price: float, reason: str):
         if ticker in memory.highest_prices:
             del memory.highest_prices[ticker]
         
+        # Reset alerts
         memory.alerts_sent[ticker] = {'52w_high': False, 'breakout': False, 'support': False}
         
-        symbol = ticker.replace('.NS', '').replace('.BO', '')
-        profit_emoji = "💚" if total_change >= 0 else "❌"
-        holding_days = holding_period.days
-        holding_hours = holding_period.seconds // 3600
+        # Save memory after trade
+        # memory.save_memory()
         
-        message = f"🔴 *ADVANCED SELL SIGNAL*\n"
-        message += f"📉 {symbol} - ₹{current_price:.2f}\n"
+        # Send sell alert
+        symbol = ticker.replace('.NS', '').replace('.BO', '')
+        profit_emoji = "✅" if total_change >= 0 else "❌"
+        
+        message = f"🔴 *IMPROVED SELL SIGNAL*\n"
+        message += f"📉 {symbol} - Rs.{current_price:.2f}\n"
         message += f"💼 Sold {shares} shares\n"
-        message += f"{profit_emoji} P&L: ₹{total_change:.2f} ({change_percent:+.2f}%)\n"
-        message += f"⏱️ Held: {holding_days}d {holding_hours}h\n"
+        message += f"{profit_emoji} P&L: Rs.{total_change:.2f} ({change_percent:+.2f}%)\n"
+        message += f"⏱️ Held: {holding_period.days}d {holding_period.seconds//3600}h\n"
         message += f"💡 Reason: {reason}"
         
         send_telegram_message(message)
-        print(f"[ADVANCED SELL] {symbol} @ ₹{current_price:.2f} | P&L: ₹{total_change:.2f} | {reason}")
+        logger.info(f"[IMPROVED SELL] {symbol} @ Rs.{current_price:.2f} | P&L: Rs.{total_change:.2f}")
         
     except Exception as e:
-        print(f"Error executing advanced sell for {ticker}: {e}")
+        logger.error(f"Error executing improved sell for {ticker}: {e}")
+
 
 def update_dynamic_trailing_stop(ticker: str, current_price: float, indicators: Dict):
     """Update dynamic trailing stop-loss"""
@@ -982,11 +1502,11 @@ def check_advanced_alerts(ticker: str, current_price: float, indicators: Dict, r
             current_volume = realtime_data.get('volume', 0)
             
             if all([bb_upper, volume_sma]) and current_price > bb_upper and current_volume > volume_sma * 2:
-                message = f"🚀 *BREAKOUT ALERT*\n"
-                message += f"📈 {symbol} broke above Bollinger Band\n"
-                message += f"💰 Price: ₹{current_price:.2f} (vs ₹{bb_upper:.2f})\n"
-                message += f"📊 Volume spike: {(current_volume/volume_sma):.1f}x average\n"
-                message += f"🎯 Strong momentum detected!"
+                message = f" *BREAKOUT ALERT*\n"
+                message += f" {symbol} broke above Bollinger Band\n"
+                message += f" Price: Rs.{current_price:.2f} (vs Rs.{bb_upper:.2f})\n"
+                message += f" Volume spike: {(current_volume/volume_sma):.1f}x average\n"
+                message += f" Strong momentum detected!"
                 
                 send_telegram_message(message)
                 memory.alerts_sent[ticker]['breakout'] = True
@@ -996,10 +1516,10 @@ def check_advanced_alerts(ticker: str, current_price: float, indicators: Dict, r
             if not memory.alerts_sent[ticker]['support']:
                 support_level = safe_extract(indicators.get('support_1'))
                 if support_level and current_price < support_level * 1.02:  # Within 2% of support
-                    message = f"⚠️ *SUPPORT LEVEL ALERT*\n"
-                    message += f"📉 {symbol} near support at ₹{support_level:.2f}\n"
-                    message += f"💰 Current: ₹{current_price:.2f}\n"
-                    message += f"🛡️ Key level to watch!"
+                    message = f" *SUPPORT LEVEL ALERT*\n"
+                    message += f" {symbol} near support at Rs.{support_level:.2f}\n"
+                    message += f" Current: Rs.{current_price:.2f}\n"
+                    message += f" Key level to watch!"
                     
                     send_telegram_message(message)
                     memory.alerts_sent[ticker]['support'] = True
@@ -1014,12 +1534,12 @@ def check_advanced_alerts(ticker: str, current_price: float, indicators: Dict, r
                     entry_price = memory.holdings[ticker].get('entry_price', 0)
                     profit = ((current_price - entry_price) / entry_price) * 100 if entry_price > 0 else 0
                     
-                    message = f"🏆 *52-WEEK HIGH ALERT*\n"
-                    message += f"🚀 {symbol} near 52W high!\n"
-                    message += f"📊 Current: ₹{current_price:.2f}\n"
-                    message += f"🎯 52W High: ₹{high_52w:.2f}\n"
-                    message += f"💚 Your profit: {profit:+.2f}%\n"
-                    message += f"🤔 Consider exit strategy"
+                    message = f" *52-WEEK HIGH ALERT*\n"
+                    message += f" {symbol} near 52W high!\n"
+                    message += f" Current: Rs.{current_price:.2f}\n"
+                    message += f" 52W High: Rs.{high_52w:.2f}\n"
+                    message += f" Your profit: {profit:+.2f}%\n"
+                    message += f" Consider exit strategy"
                     
                     send_telegram_message(message)
                     memory.alerts_sent[ticker]['52w_high'] = True
@@ -1147,16 +1667,16 @@ def print_advanced_status_table():
                     change_percent = ((current_price - entry_price) / entry_price) * 100
             
             # Format strings
-            current_price_str = f"₹{current_price:.2f}" if current_price > 0 else "N/A"
+            current_price_str = f"Rs.{current_price:.2f}" if current_price > 0 else "N/A"
             day_change_str = f"{day_change:+.2f}%" if day_change != 0 else "0.00%"
-            entry_price_str = f"₹{entry_price:.2f}" if entry_price > 0 else "--"
+            entry_price_str = f"Rs.{entry_price:.2f}" if entry_price > 0 else "--"
             rsi_str = f"{rsi:.1f}" if rsi > 0 else "N/A"
             macd_str = f"{macd:.3f}" if macd != 0 else "N/A"
             atr_str = f"{atr:.2f}" if atr > 0 else "N/A"
             signal_strength_str = f"{signal_strength:.0f}" if signal_strength > 0 else "0"
-            sell_threshold_str = f"₹{sell_threshold:.2f}" if sell_threshold > 0 else "--"
+            sell_threshold_str = f"Rs.{sell_threshold:.2f}" if sell_threshold > 0 else "--"
             change_percent_str = f"{change_percent:+.2f}%" if change_percent != 0 else "--"
-            position_value_str = f"₹{position_value:.0f}" if position_value > 0 else "--"
+            position_value_str = f"Rs.{position_value:.0f}" if position_value > 0 else "--"
             
             # Color coding for signal strength
             if signal_strength >= 75:
@@ -1191,7 +1711,7 @@ def print_advanced_status_table():
             print(f"Error processing {ticker}: {e}")
     
     # Calculate summary statistics
-    total_positions = len([row for row in table_data if "₹" in row[10] and row[10] != "--"])
+    total_positions = len([row for row in table_data if "Rs." in row[10] and row[10] != "--"])
     waiting_positions = len(TICKERS) - total_positions
     strong_signals = len([row for row in table_data if "🟢" in row[7]])
     weak_signals = len([row for row in table_data if "🔴" in row[7]])
@@ -1208,7 +1728,7 @@ def print_advanced_status_table():
     print(f"POSITIONS: {total_positions} ACTIVE | {waiting_positions} WAITING")
     print(f"SIGNALS: {strong_signals} STRONG 🟢 | {weak_signals} WEAK 🔴")
     print(f"MARKET SENTIMENT: {memory.market_sentiment}")
-    print(f"SESSION P&L: ₹{memory.total_pnl:.2f} | MAX DRAWDOWN: {memory.max_drawdown:.2f}%")
+    print(f"SESSION P&L: Rs.{memory.total_pnl:.2f} | MAX DRAWDOWN: {memory.max_drawdown:.2f}%")
     print(f"WIN RATE: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "WIN RATE: 0%")
     print(f"LAST UPDATED: {datetime.now().strftime('%H:%M:%S')}")
     print("="*150)
@@ -1241,8 +1761,8 @@ def is_alive_check_time() -> bool:
 
 def main_advanced_trading_loop():
     """Main advanced trading loop with enhanced features"""
-    print("🚀 Advanced Stock Trading Bot Started!")
-    send_telegram_message("🚀 *Advanced Stock Trading Bot v2.0 Started!*\n📊 Enhanced with 15+ technical indicators\n🎯 Smart signal strength analysis\n⚡ Dynamic position sizing & stop-loss")
+    print(" Advanced Stock Trading Bot Started!")
+    send_telegram_message(" *Advanced Stock Trading Bot v2.0 Started!*\n Enhanced with 15+ technical indicators\n Smart signal strength analysis\n Dynamic position sizing & stop-loss")
     
     loop_count = 0
     
@@ -1294,10 +1814,10 @@ def main_advanced_trading_loop():
                 active_positions = sum(1 for ticker in memory.holdings if memory.holdings[ticker].get('shares', 0) > 0)
                 strong_signals = sum(1 for strength in memory.signal_strength.values() if strength > 70)
                 
-                summary_msg = f"📊 *Hourly Summary*\n"
-                summary_msg += f"💼 Active: {active_positions} | Strong signals: {strong_signals}\n"
-                summary_msg += f"📈 Market: {memory.market_sentiment} | P&L: ₹{memory.total_pnl:.2f}\n"
-                summary_msg += f"🎯 Win rate: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "🎯 Win rate: 0%"
+                summary_msg = f" *Hourly Summary*\n"
+                summary_msg += f" Active: {active_positions} | Strong signals: {strong_signals}\n"
+                summary_msg += f" Market: {memory.market_sentiment} | P&L: Rs.{memory.total_pnl:.2f}\n"
+                summary_msg += f" Win rate: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "🎯 Win rate: 0%"
                 
                 send_telegram_message(summary_msg)
             
@@ -1309,7 +1829,7 @@ def main_advanced_trading_loop():
             break
         except Exception as e:
             print(f"Error in main advanced loop: {e}")
-            error_msg = f"❌ *Advanced Bot Error*\nCycle #{loop_count}\nError: {str(e)[:100]}\nBot continuing..."
+            error_msg = f" *Advanced Bot Error*\nCycle #{loop_count}\nError: {str(e)[:100]}\nBot continuing..."
             send_telegram_message(error_msg)
         
         time.sleep(CHECK_INTERVAL)
@@ -1369,30 +1889,30 @@ def main():
     try:
         import talib
         from tabulate import tabulate
-        logger.info("✅ All required libraries verified")
+        logger.info("All required libraries verified")
     except ImportError as e:
         if 'talib' in str(e):
-            logger.error("❌ TA-Lib not installed. Install with: pip install TA-Lib")
+            logger.error(" TA-Lib not installed. Install with: pip install TA-Lib")
             logger.error("On Windows, you might need to download the wheel from: https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib")
         elif 'tabulate' in str(e):
-            logger.error("❌ tabulate not installed. Install with: pip install tabulate")
+            logger.error(" tabulate not installed. Install with: pip install tabulate")
         sys.exit(1)
     
     # Configuration check
     if not TELEGRAM_BOT_TOKEN or TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
-        logger.warning("⚠️ WARNING: Telegram bot token not configured. Messages will print to console.")
+        logger.warning(" WARNING: Telegram bot token not configured. Messages will print to console.")
     
     # Log advanced configuration settings
-    logger.info("🔧 Advanced Trading Bot Configuration:")
-    logger.info(f"   📊 Monitoring {len(TICKERS)} stocks")
-    logger.info(f"   ⏰ Check interval: {CHECK_INTERVAL//60} minutes")
-    logger.info(f"   📈 ATR Multiplier: {ATR_MULTIPLIER}")
-    logger.info(f"   🎯 RSI Range: {RSI_OVERSOLD}-{RSI_OVERBOUGHT}")
-    logger.info(f"   📊 Volume Spike Threshold: {MIN_VOLUME_SPIKE}x")
-    logger.info(f"   💪 Signal Strength Threshold: {STRENGTH_THRESHOLD}")
+    logger.info(" Advanced Trading Bot Configuration:")
+    logger.info(f"    Monitoring {len(TICKERS)} stocks")
+    logger.info(f"    Check interval: {CHECK_INTERVAL//60} minutes")
+    logger.info(f"    ATR Multiplier: {ATR_MULTIPLIER}")
+    logger.info(f"    RSI Range: {RSI_OVERSOLD}-{RSI_OVERBOUGHT}")
+    logger.info(f"    Volume Spike Threshold: {MIN_VOLUME_SPIKE}x")
+    logger.info(f"    Signal Strength Threshold: {STRENGTH_THRESHOLD}")
     
     # Print initial advanced status table
-    logger.info("🔄 Initializing advanced stock analysis...")
+    logger.info(" Initializing advanced stock analysis...")
     try:
         print_advanced_status_table()
     except Exception as e:

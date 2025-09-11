@@ -1,0 +1,209 @@
+2025-09-10 20:56:52,624 [INFO] Signal handlers set up successfully
+2025-09-10 20:57:04,089 [INFO] Signal handlers set up successfully
+2025-09-10 21:05:05,686 [INFO] Signal handlers set up successfully
+2025-09-10 21:05:05,686 [INFO] All required libraries verified
+2025-09-10 21:05:05,686 [INFO]  Advanced Trading Bot Configuration:
+2025-09-10 21:05:05,687 [INFO]     Monitoring 29 stocks
+2025-09-10 21:05:05,687 [INFO]     Check interval: 5 minutes
+2025-09-10 21:05:05,687 [INFO]     ATR Multiplier: 2.0
+2025-09-10 21:05:05,687 [INFO]     RSI Range: 25-75
+2025-09-10 21:05:05,687 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-10 21:05:05,687 [INFO]     Signal Strength Threshold: 65
+2025-09-10 21:05:05,687 [INFO]  Initializing advanced stock analysis...
+2025-09-10 22:16:04,072 [INFO] Signal handlers set up successfully
+2025-09-10 22:16:04,073 [INFO] All required libraries verified
+2025-09-10 22:16:04,074 [INFO]  Advanced Trading Bot Configuration:
+2025-09-10 22:16:04,074 [INFO]     Monitoring 29 stocks
+2025-09-10 22:16:04,074 [INFO]     Check interval: 5 minutes
+2025-09-10 22:16:04,074 [INFO]     ATR Multiplier: 2.0
+2025-09-10 22:16:04,074 [INFO]     RSI Range: 25-75
+2025-09-10 22:16:04,074 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-10 22:16:04,074 [INFO]     Signal Strength Threshold: 65
+2025-09-10 22:16:04,074 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:04:08,181 [INFO] Signal handlers set up successfully
+2025-09-11 13:04:08,183 [INFO] All required libraries verified
+2025-09-11 13:04:08,184 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:04:08,184 [INFO]     Monitoring 29 stocks
+2025-09-11 13:04:08,184 [INFO]     Check interval: 5 minutes
+2025-09-11 13:04:08,185 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:04:08,185 [INFO]     RSI Range: 20-80
+2025-09-11 13:04:08,185 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:04:08,186 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:04:08,186 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:05:56,797 [INFO] Signal handlers set up successfully
+2025-09-11 13:05:56,797 [INFO] All required libraries verified
+2025-09-11 13:05:56,798 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:05:56,798 [INFO]     Monitoring 29 stocks
+2025-09-11 13:05:56,798 [INFO]     Check interval: 5 minutes
+2025-09-11 13:05:56,798 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:05:56,798 [INFO]     RSI Range: 20-80
+2025-09-11 13:05:56,798 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:05:56,798 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:05:56,798 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:06:43,493 [ERROR] Error saving memory: name 'json' is not defined
+2025-09-11 13:07:09,038 [ERROR] Error saving memory: name 'json' is not defined
+2025-09-11 13:09:00,707 [ERROR] Error loading memory: Expecting value: line 1 column 1 (char 0)
+2025-09-11 13:09:00,709 [INFO] Signal handlers set up successfully
+2025-09-11 13:09:00,709 [INFO] All required libraries verified
+2025-09-11 13:09:00,709 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:09:00,709 [INFO]     Monitoring 29 stocks
+2025-09-11 13:09:00,709 [INFO]     Check interval: 5 minutes
+2025-09-11 13:09:00,710 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:09:00,710 [INFO]     RSI Range: 20-80
+2025-09-11 13:09:00,710 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:09:00,710 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:09:00,710 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:09:49,136 [INFO] Memory saved successfully to trading_memory.json
+2025-09-11 13:10:14,760 [INFO] Memory saved successfully to trading_memory.json
+2025-09-11 13:12:51,350 [INFO] Memory loaded successfully from trading_memory.json
+2025-09-11 13:12:51,351 [INFO] Signal handlers set up successfully
+2025-09-11 13:12:51,351 [INFO] All required libraries verified
+2025-09-11 13:12:51,351 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:12:51,352 [INFO]     Monitoring 29 stocks
+2025-09-11 13:12:51,352 [INFO]     Check interval: 5 minutes
+2025-09-11 13:12:51,352 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:12:51,352 [INFO]     RSI Range: 20-80
+2025-09-11 13:12:51,352 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:12:51,353 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:12:51,353 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:19:47,359 [INFO] Memory saved successfully to trading_memory.json
+2025-09-11 13:19:49,859 [INFO] [IMPROVED BUY] JAMNAAUTO @ Rs.106.72 | Strength: 80.0
+2025-09-11 13:20:07,539 [ERROR] Error loading memory: Expecting value: line 1 column 1 (char 0)
+2025-09-11 13:20:07,540 [INFO] Signal handlers set up successfully
+2025-09-11 13:20:07,541 [INFO] All required libraries verified
+2025-09-11 13:20:07,542 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:20:07,542 [INFO]     Monitoring 29 stocks
+2025-09-11 13:20:07,543 [INFO]     Check interval: 5 minutes
+2025-09-11 13:20:07,543 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:20:07,544 [INFO]     RSI Range: 20-80
+2025-09-11 13:20:07,544 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:20:07,545 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:20:07,546 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:20:38,125 [INFO] Memory saved successfully to trading_memory.json
+2025-09-11 13:20:40,869 [INFO] [IMPROVED BUY] JAMNAAUTO @ Rs.106.72 | Strength: 80.0
+2025-09-11 13:21:08,629 [INFO] Memory saved successfully to trading_memory.json
+2025-09-11 13:21:12,290 [INFO] [IMPROVED BUY] GSFC @ Rs.204.65 | Strength: 80.0
+2025-09-11 13:21:36,103 [INFO] Memory saved successfully to trading_memory.json
+2025-09-11 13:21:38,414 [INFO] [IMPROVED BUY] RSYSTEMS @ Rs.461.45 | Strength: 80.0
+2025-09-11 13:35:01,972 [INFO] Signal handlers set up successfully
+2025-09-11 13:35:01,973 [INFO] All required libraries verified
+2025-09-11 13:35:01,973 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:35:01,974 [INFO]     Monitoring 29 stocks
+2025-09-11 13:35:01,974 [INFO]     Check interval: 5 minutes
+2025-09-11 13:35:01,975 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:35:01,975 [INFO]     RSI Range: 20-80
+2025-09-11 13:35:01,976 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:35:01,977 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:35:01,977 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:35:16,801 [INFO] Signal handlers set up successfully
+2025-09-11 13:35:16,802 [INFO] All required libraries verified
+2025-09-11 13:35:16,802 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:35:16,803 [INFO]     Monitoring 29 stocks
+2025-09-11 13:35:16,804 [INFO]     Check interval: 5 minutes
+2025-09-11 13:35:16,804 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:35:16,805 [INFO]     RSI Range: 20-80
+2025-09-11 13:35:16,805 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:35:16,806 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:35:16,807 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:37:54,894 [INFO] Signal handlers set up successfully
+2025-09-11 13:37:54,895 [INFO] All required libraries verified
+2025-09-11 13:37:54,896 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:37:54,897 [INFO]     Monitoring 29 stocks
+2025-09-11 13:37:54,897 [INFO]     Check interval: 5 minutes
+2025-09-11 13:37:54,898 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:37:54,898 [INFO]     RSI Range: 20-80
+2025-09-11 13:37:54,899 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:37:54,899 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:37:54,900 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:38:22,809 [ERROR] Error executing improved buy for JAMNAAUTO.NS: 'InMemoryStockMemory' object has no attribute 'save_memory'
+2025-09-11 13:38:54,709 [INFO] Signal handlers set up successfully
+2025-09-11 13:38:54,711 [INFO] All required libraries verified
+2025-09-11 13:38:54,711 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:38:54,712 [INFO]     Monitoring 29 stocks
+2025-09-11 13:38:54,712 [INFO]     Check interval: 5 minutes
+2025-09-11 13:38:54,713 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:38:54,714 [INFO]     RSI Range: 20-80
+2025-09-11 13:38:54,714 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:38:54,714 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:38:54,715 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:39:18,764 [ERROR] Error executing improved buy for JAMNAAUTO.NS: 'InMemoryStockMemory' object has no attribute 'save_memory'
+2025-09-11 13:39:43,969 [ERROR] Error executing improved buy for GSFC.NS: 'InMemoryStockMemory' object has no attribute 'save_memory'
+2025-09-11 13:40:06,762 [ERROR] Error executing improved buy for RSYSTEMS.BO: 'InMemoryStockMemory' object has no attribute 'save_memory'
+2025-09-11 13:44:42,738 [INFO] Signal handlers set up successfully
+2025-09-11 13:44:42,739 [INFO] All required libraries verified
+2025-09-11 13:44:42,739 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:44:42,740 [INFO]     Monitoring 29 stocks
+2025-09-11 13:44:42,740 [INFO]     Check interval: 5 minutes
+2025-09-11 13:44:42,741 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:44:42,741 [INFO]     RSI Range: 20-80
+2025-09-11 13:44:42,741 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:44:42,742 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:44:42,742 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:47:55,675 [INFO] Signal handlers set up successfully
+2025-09-11 13:47:55,676 [INFO] All required libraries verified
+2025-09-11 13:47:55,676 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:47:55,677 [INFO]     Monitoring 29 stocks
+2025-09-11 13:47:55,677 [INFO]     Check interval: 5 minutes
+2025-09-11 13:47:55,678 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:47:55,679 [INFO]     RSI Range: 20-80
+2025-09-11 13:47:55,679 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:47:55,680 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:47:55,680 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:49:37,224 [INFO] Signal handlers set up successfully
+2025-09-11 13:49:37,225 [INFO] All required libraries verified
+2025-09-11 13:49:37,225 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:49:37,226 [INFO]     Monitoring 29 stocks
+2025-09-11 13:49:37,226 [INFO]     Check interval: 5 minutes
+2025-09-11 13:49:37,226 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:49:37,227 [INFO]     RSI Range: 20-80
+2025-09-11 13:49:37,227 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:49:37,227 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:49:37,227 [INFO]  Initializing advanced stock analysis...
+2025-09-11 13:50:51,041 [INFO] Signal handlers set up successfully
+2025-09-11 13:50:51,042 [INFO] All required libraries verified
+2025-09-11 13:50:51,043 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 13:50:51,044 [INFO]     Monitoring 29 stocks
+2025-09-11 13:50:51,045 [INFO]     Check interval: 5 minutes
+2025-09-11 13:50:51,045 [INFO]     ATR Multiplier: 2.5
+2025-09-11 13:50:51,046 [INFO]     RSI Range: 20-80
+2025-09-11 13:50:51,047 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 13:50:51,047 [INFO]     Signal Strength Threshold: 65
+2025-09-11 13:50:51,048 [INFO]  Initializing advanced stock analysis...
+2025-09-11 14:27:46,456 [INFO] Signal handlers set up successfully
+2025-09-11 14:27:46,458 [INFO] All required libraries verified
+2025-09-11 14:27:46,458 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 14:27:46,459 [INFO]     Monitoring 29 stocks
+2025-09-11 14:27:46,459 [INFO]     Check interval: 5 minutes
+2025-09-11 14:27:46,460 [INFO]     ATR Multiplier: 2.5
+2025-09-11 14:27:46,460 [INFO]     RSI Range: 20-80
+2025-09-11 14:27:46,461 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 14:27:46,461 [INFO]     Signal Strength Threshold: 65
+2025-09-11 14:27:46,462 [INFO]  Initializing advanced stock analysis...
+2025-09-11 14:28:12,330 [ERROR] Error executing improved buy for JAMNAAUTO.NS: 'InMemoryStockMemory' object has no attribute 'save_memory'
+2025-09-11 14:28:37,637 [ERROR] Error executing improved buy for GSFC.NS: 'InMemoryStockMemory' object has no attribute 'save_memory'
+2025-09-11 14:28:47,884 [INFO] Signal handlers set up successfully
+2025-09-11 14:28:47,885 [INFO] All required libraries verified
+2025-09-11 14:28:47,885 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 14:28:47,886 [INFO]     Monitoring 29 stocks
+2025-09-11 14:28:47,886 [INFO]     Check interval: 5 minutes
+2025-09-11 14:28:47,886 [INFO]     ATR Multiplier: 2.5
+2025-09-11 14:28:47,887 [INFO]     RSI Range: 20-80
+2025-09-11 14:28:47,887 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 14:28:47,887 [INFO]     Signal Strength Threshold: 65
+2025-09-11 14:28:47,887 [INFO]  Initializing advanced stock analysis...
+2025-09-11 14:29:14,043 [INFO] [IMPROVED BUY] JAMNAAUTO @ Rs.106.76 | Strength: 80.0
+2025-09-11 14:29:43,016 [INFO] [IMPROVED BUY] GSFC @ Rs.205.26 | Strength: 80.0
+2025-09-11 15:54:19,060 [INFO] Signal handlers set up successfully
+2025-09-11 15:54:19,061 [INFO] All required libraries verified
+2025-09-11 15:54:19,062 [INFO]  Advanced Trading Bot Configuration:
+2025-09-11 15:54:19,062 [INFO]     Monitoring 29 stocks
+2025-09-11 15:54:19,063 [INFO]     Check interval: 5 minutes
+2025-09-11 15:54:19,063 [INFO]     ATR Multiplier: 2.5
+2025-09-11 15:54:19,064 [INFO]     RSI Range: 20-80
+2025-09-11 15:54:19,064 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-11 15:54:19,065 [INFO]     Signal Strength Threshold: 65
+2025-09-11 15:54:19,065 [INFO]  Initializing advanced stock analysis...
+2025-09-11 15:54:43,962 [INFO] [IMPROVED BUY] JAMNAAUTO @ Rs.107.43 | Strength: 80.0
+2025-09-11 15:55:11,316 [INFO] [IMPROVED BUY] GSFC @ Rs.204.21 | Strength: 80.0
+2025-09-11 15:55:23,417 [INFO] [IMPROVED BUY] TILAK @ Rs.3.36 | Strength: 65.0
+2025-09-11 15:55:38,140 [INFO] [IMPROVED BUY] RSYSTEMS @ Rs.456.45 | Strength: 70.0
