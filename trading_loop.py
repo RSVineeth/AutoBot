@@ -381,7 +381,7 @@ def should_skip_ticker(ticker: str) -> Tuple[bool, str]:
 
 def cleanup_and_exit():
     """Clean exit with summary"""
-    print("\n🛑 Bot shutting down...")
+    print("\nBot shutting down...")
     print_final_summary()
     send_telegram_message("🛑 *Bot Stopped*\nTrading session ended")
     memory.shutdown_flag = True
@@ -1502,12 +1502,18 @@ def check_advanced_alerts(ticker: str, current_price: float, indicators: Dict, r
             current_volume = realtime_data.get('volume', 0)
             
             if all([bb_upper, volume_sma]) and current_price > bb_upper and current_volume > volume_sma * 2:
-                message = f" *BREAKOUT ALERT*\n"
-                message += f" {symbol} broke above Bollinger Band\n"
-                message += f" Price: Rs.{current_price:.2f} (vs Rs.{bb_upper:.2f})\n"
-                message += f" Volume spike: {(current_volume/volume_sma):.1f}x average\n"
-                message += f" Strong momentum detected!"
+                # message = f" *BREAKOUT ALERT*\n"
+                # message += f" {symbol} broke above Bollinger Band\n"
+                # message += f" Price: Rs.{current_price:.2f} (vs Rs.{bb_upper:.2f})\n"
+                # message += f" Volume spike: {(current_volume/volume_sma):.1f}x average\n"
+                # message += f" Strong momentum detected!"
                 
+                message = f"🚨 *BREAKOUT ALERT* 🚨\n"
+                message += f"📈 {symbol} broke above Bollinger Band\n"
+                message += f"💰 Price: Rs.{current_price:.2f} (vs Rs.{bb_upper:.2f})\n"
+                message += f"📊 Volume spike: {(current_volume/volume_sma):.1f}x average\n"
+                message += f"🔥 Strong momentum detected! 🚀"
+
                 send_telegram_message(message)
                 memory.alerts_sent[ticker]['breakout'] = True
         
@@ -1516,10 +1522,15 @@ def check_advanced_alerts(ticker: str, current_price: float, indicators: Dict, r
             if not memory.alerts_sent[ticker]['support']:
                 support_level = safe_extract(indicators.get('support_1'))
                 if support_level and current_price < support_level * 1.02:  # Within 2% of support
-                    message = f" *SUPPORT LEVEL ALERT*\n"
-                    message += f" {symbol} near support at Rs.{support_level:.2f}\n"
-                    message += f" Current: Rs.{current_price:.2f}\n"
-                    message += f" Key level to watch!"
+                    # message = f" *SUPPORT LEVEL ALERT*\n"
+                    # message += f" {symbol} near support at Rs.{support_level:.2f}\n"
+                    # message += f" Current: Rs.{current_price:.2f}\n"
+                    # message += f" Key level to watch!"
+
+                    message = f"⚠️ *SUPPORT LEVEL ALERT* ⚠️\n"
+                    message += f"📉 {symbol} near support at Rs.{support_level:.2f}\n"
+                    message += f"💵 Current: Rs.{current_price:.2f}\n"
+                    message += f"👀 Key level to watch! 🎯"
                     
                     send_telegram_message(message)
                     memory.alerts_sent[ticker]['support'] = True
@@ -1534,13 +1545,20 @@ def check_advanced_alerts(ticker: str, current_price: float, indicators: Dict, r
                     entry_price = memory.holdings[ticker].get('entry_price', 0)
                     profit = ((current_price - entry_price) / entry_price) * 100 if entry_price > 0 else 0
                     
-                    message = f" *52-WEEK HIGH ALERT*\n"
-                    message += f" {symbol} near 52W high!\n"
-                    message += f" Current: Rs.{current_price:.2f}\n"
-                    message += f" 52W High: Rs.{high_52w:.2f}\n"
-                    message += f" Your profit: {profit:+.2f}%\n"
-                    message += f" Consider exit strategy"
-                    
+                    # message = f" *52-WEEK HIGH ALERT*\n"
+                    # message += f" {symbol} near 52W high!\n"
+                    # message += f" Current: Rs.{current_price:.2f}\n"
+                    # message += f" 52W High: Rs.{high_52w:.2f}\n"
+                    # message += f" Your profit: {profit:+.2f}%\n"
+                    # message += f" Consider exit strategy"
+                                        
+                    message = f"🏆 *52-WEEK HIGH ALERT* 🏆\n"
+                    message += f"🚀 {symbol} near 52W high!\n"
+                    message += f"💰 Current: Rs.{current_price:.2f}\n"
+                    message += f"📊 52W High: Rs.{high_52w:.2f}\n"
+                    message += f"💸 Your profit: {profit:+.2f}%\n"
+                    message += f"🤔 Consider exit strategy 📋"
+
                     send_telegram_message(message)
                     memory.alerts_sent[ticker]['52w_high'] = True
                     
@@ -1762,8 +1780,12 @@ def is_alive_check_time() -> bool:
 def main_advanced_trading_loop():
     """Main advanced trading loop with enhanced features"""
     print(" Advanced Stock Trading Bot Started!")
-    send_telegram_message(" *Advanced Stock Trading Bot v2.0 Started!*\n Enhanced with 15+ technical indicators\n Smart signal strength analysis\n Dynamic position sizing & stop-loss")
-    
+    # send_telegram_message(" *Advanced Stock Trading Bot v2.0 Started!*\n Enhanced with 15+ technical indicators\n Smart signal strength analysis\n Dynamic position sizing & stop-loss")
+    send_telegram_message("🤖 *Advanced Stock Trading Bot v2.0 Started!* 🚀\n"
+                        "⚡ Enhanced with 15+ technical indicators\n"
+                        "🧠 Smart signal strength analysis\n"
+                        "🎯 Dynamic position sizing & stop-loss ✅")
+
     loop_count = 0
     
     while True:
@@ -1814,11 +1836,16 @@ def main_advanced_trading_loop():
                 active_positions = sum(1 for ticker in memory.holdings if memory.holdings[ticker].get('shares', 0) > 0)
                 strong_signals = sum(1 for strength in memory.signal_strength.values() if strength > 70)
                 
-                summary_msg = f" *Hourly Summary*\n"
-                summary_msg += f" Active: {active_positions} | Strong signals: {strong_signals}\n"
-                summary_msg += f" Market: {memory.market_sentiment} | P&L: Rs.{memory.total_pnl:.2f}\n"
-                summary_msg += f" Win rate: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "🎯 Win rate: 0%"
+                # summary_msg = f" *Hourly Summary*\n"
+                # summary_msg += f" Active: {active_positions} | Strong signals: {strong_signals}\n"
+                # summary_msg += f" Market: {memory.market_sentiment} | P&L: Rs.{memory.total_pnl:.2f}\n"
+                # summary_msg += f" Win rate: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "🎯 Win rate: 0%"
                 
+                summary_msg = f"⏰ *Hourly Summary* 📊\n"
+                summary_msg += f"🔄 Active: {active_positions} | ⚡ Strong signals: {strong_signals}\n"
+                summary_msg += f"📈 Market: {memory.market_sentiment} | 💰 P&L: Rs.{memory.total_pnl:.2f}\n"
+                summary_msg += f"🎯 Win rate: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "🎯 Win rate: 0%"
+
                 send_telegram_message(summary_msg)
             
             print(f"[{current_time.strftime('%H:%M:%S')}] Cycle complete. Next analysis in {CHECK_INTERVAL//60} minutes...")
@@ -1829,7 +1856,8 @@ def main_advanced_trading_loop():
             break
         except Exception as e:
             print(f"Error in main advanced loop: {e}")
-            error_msg = f" *Advanced Bot Error*\nCycle #{loop_count}\nError: {str(e)[:100]}\nBot continuing..."
+            # error_msg = f" *Advanced Bot Error*\nCycle #{loop_count}\nError: {str(e)[:100]}\nBot continuing..."
+            error_msg = f"🚨 *Advanced Bot Error* ⚠️\n🔄 Cycle #{loop_count}\n❌ Error: {str(e)[:100]}\n✅ Bot continuing..."
             send_telegram_message(error_msg)
         
         time.sleep(CHECK_INTERVAL)
