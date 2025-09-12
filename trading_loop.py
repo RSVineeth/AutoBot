@@ -119,7 +119,7 @@ RSI_OVERBOUGHT = 80 # 75   # More strict overbought
 TRADE_COOLDOWN_MINUTES = 30  # Minimum time between trades for same ticker
 MAX_CONSECUTIVE_LOSSES = 3   # Stop trading ticker after consecutive losses
 MIN_HOLDING_MINUTES = 15     # Minimum holding period
-MAX_DAILY_TRADES = 20        # Maximum trades per day
+MAX_DAILY_TRADES = 40        # Maximum trades per day
 
 # Advanced Configuration
 MIN_VOLUME_SPIKE = 1.8  # Volume spike threshold
