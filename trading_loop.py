@@ -17,6 +17,10 @@ from collections import deque
 import statistics
 import os
 import logging
+import psutil
+import subprocess
+from enhanced_diagnostics import setup_enhanced_diagnostics, monitor_system_health
+
 # import json  
 
 
@@ -267,6 +271,237 @@ ALIVE_CHECK_EVENING = "15:00"
 #             logger.error(f"Error loading memory: {e}")
 
 # memory = PersistentStockMemory()
+
+class ShutdownDiagnostics:
+    def __init__(self, telegram_sender=None):
+        self.start_time = datetime.now()
+        self.send_telegram_message = telegram_sender or self.default_telegram
+        self.setup_signal_handlers()
+        self.log_startup_info()
+    
+    def default_telegram(self, message):
+        """Default telegram sender (just print)"""
+        print(f"[TELEGRAM] {message}")
+    
+    def setup_signal_handlers(self):
+        """Enhanced signal handling with diagnostics"""
+        def enhanced_signal_handler(signum, frame):
+            signal_name = signal.Signals(signum).name
+            logger.critical(f"SHUTDOWN INITIATED - Signal: {signal_name} ({signum})")
+            
+            # Log shutdown diagnostics
+            self.log_shutdown_diagnostics(signum, frame)
+            
+            # Determine and log reason
+            reason = self.determine_shutdown_reason(signum)
+            logger.critical(f"LIKELY REASON: {reason}")
+            
+            # Send Telegram alert
+            self.send_shutdown_alert(signal_name, reason)
+            
+            # Graceful cleanup
+            self.cleanup_and_exit()
+        
+        try:
+            if hasattr(signal, 'SIGTERM'):
+                signal.signal(signal.SIGTERM, enhanced_signal_handler)
+                logger.info("SIGTERM handler registered")
+            if hasattr(signal, 'SIGINT'):
+                signal.signal(signal.SIGINT, enhanced_signal_handler)
+                logger.info("SIGINT handler registered")
+        except ValueError as e:
+            logger.warning(f"Signal handler setup failed: {e}")
+    
+    def log_startup_info(self):
+        """Log startup information to console"""
+        try:
+            logger.info("=== STARTUP DIAGNOSTICS ===")
+            logger.info(f"Process ID: {os.getpid()}")
+            logger.info(f"Parent PID: {os.getppid()}")
+            logger.info(f"User: {os.getenv('USER', 'unknown')}")
+            logger.info(f"Working Directory: {os.getcwd()}")
+            logger.info(f"In Container: {os.path.exists('/.dockerenv')}")
+            logger.info(f"Start Time: {self.start_time}")
+            
+            # Log parent process info
+            try:
+                parent = psutil.Process(os.getppid())
+                logger.info(f"Parent Process: {parent.name()} - {' '.join(parent.cmdline()[:3])}")
+            except:
+                logger.warning("Could not get parent process info")
+            
+            logger.info("=== END STARTUP DIAGNOSTICS ===")
+            
+        except Exception as e:
+            logger.error(f"Error logging startup info: {e}")
+    
+    def log_shutdown_diagnostics(self, signum, frame):
+        """Log shutdown diagnostics to console"""
+        try:
+            uptime = (datetime.now() - self.start_time).total_seconds()
+            signal_name = signal.Signals(signum).name if signum in signal.Signals._value2name_ else 'UNKNOWN'
+            
+            logger.info("=== SHUTDOWN DIAGNOSTICS ===")
+            logger.info(f"Shutdown Time: {datetime.now()}")
+            logger.info(f"Uptime: {uptime:.1f} seconds ({uptime/60:.1f} minutes)")
+            logger.info(f"Signal: {signal_name} ({signum})")
+            logger.info(f"Frame Location: {frame.f_code.co_filename}:{frame.f_lineno} in {frame.f_code.co_name}()")
+            
+            # Log system resources at shutdown
+            try:
+                memory = psutil.virtual_memory()
+                cpu = psutil.cpu_percent()
+                disk = psutil.disk_usage('/')
+                
+                logger.info(f"Memory Usage: {memory.percent}% ({memory.used/1024/1024/1024:.1f}GB/{memory.total/1024/1024/1024:.1f}GB)")
+                logger.info(f"CPU Usage: {cpu}%")
+                logger.info(f"Disk Usage: {disk.percent}%")
+                
+                if hasattr(os, 'getloadavg'):
+                    load = os.getloadavg()
+                    logger.info(f"Load Average: {load[0]:.2f}, {load[1]:.2f}, {load[2]:.2f}")
+                
+            except Exception as e:
+                logger.warning(f"Could not get system resources: {e}")
+            
+            # Check for OOM killer traces (simple check)
+            try:
+                result = subprocess.run(['dmesg', '-T'], capture_output=True, text=True, timeout=5)
+                if result.returncode == 0 and 'killed process' in result.stdout.lower():
+                    logger.warning("OOM Killer activity detected in system logs")
+                else:
+                    logger.info("No OOM Killer activity detected")
+            except:
+                logger.info("Could not check OOM killer status")
+            
+            logger.info("=== END SHUTDOWN DIAGNOSTICS ===")
+            
+        except Exception as e:
+            logger.error(f"Error logging shutdown diagnostics: {e}")
+    
+    def determine_shutdown_reason(self, signum):
+        """Analyze and determine likely shutdown reason"""
+        reasons = []
+        
+        # Signal analysis
+        if signum == signal.SIGTERM:
+            reasons.append("SIGTERM received")
+            
+            # Check parent process
+            try:
+                parent = psutil.Process(os.getppid())
+                parent_name = parent.name().lower()
+                if 'gunicorn' in parent_name:
+                    reasons.append("Gunicorn worker restart/reload")
+                elif 'systemd' in parent_name:
+                    reasons.append("Systemd service stop/restart")
+                elif 'docker' in parent_name or 'containerd' in parent_name:
+                    reasons.append("Container stop/restart")
+                elif parent_name == 'init' or parent.pid == 1:
+                    reasons.append("Process orphaned or system shutdown")
+            except:
+                reasons.append("Could not analyze parent process")
+        
+        elif signum == signal.SIGINT:
+            reasons.append("SIGINT - Manual interruption (Ctrl+C)")
+        
+        # Time-based analysis
+        uptime = (datetime.now() - self.start_time).total_seconds()
+        if uptime < 60:
+            reasons.append("Quick shutdown - startup failure possible")
+        elif uptime > 28800:  # 8 hours
+            reasons.append("Long-running - scheduled maintenance likely")
+        
+        # Container check
+        if os.path.exists('/.dockerenv'):
+            reasons.append("Container environment - check orchestration logs")
+        
+        return " | ".join(reasons) if reasons else "Unknown shutdown reason"
+    
+    def send_shutdown_alert(self, signal_name, reason):
+        """Send shutdown alert via Telegram"""
+        uptime_seconds = (datetime.now() - self.start_time).total_seconds()
+        uptime_str = f"{int(uptime_seconds//3600)}h {int((uptime_seconds%3600)//60)}m {int(uptime_seconds%60)}s"
+        
+        message = f"🛑 TRADING BOT SHUTDOWN\n"
+        message += f"📊 Signal: {signal_name}\n"
+        message += f"⏱️ Uptime: {uptime_str}\n"
+        message += f"🔍 Analysis: {reason}\n"
+        message += f"📝 Check console logs for details"
+        
+        try:
+            self.send_telegram_message(message)
+            logger.info("Shutdown alert sent via Telegram")
+        except Exception as e:
+            logger.error(f"Failed to send Telegram alert: {e}")
+    
+    def cleanup_and_exit(self):
+        """Enhanced cleanup with logging"""
+        logger.info("Starting graceful shutdown cleanup...")
+        
+        # Your existing cleanup code would go here
+        # print_final_summary()  # Your existing function
+        
+        logger.info("Cleanup completed - goodbye!")
+        sys.exit(0)
+    
+    def log_health_warning(self, metric, value):
+        """Log health warnings and send alerts if needed"""
+        message = f"⚠️ HIGH {metric.upper()}: {value}"
+        logger.warning(message)
+        
+        # Send telegram alert for critical resource usage
+        if (metric == "MEMORY" and value > 95) or (metric == "CPU" and value > 98):
+            telegram_msg = f"🚨 CRITICAL RESOURCE ALERT\n{metric}: {value}%\nBot may shutdown soon!"
+            try:
+                self.send_telegram_message(telegram_msg)
+            except:
+                pass
+
+# Initialize diagnostics (will be set up in your main code)
+shutdown_diagnostics = None
+
+def setup_enhanced_diagnostics(telegram_function=None):
+    """Setup enhanced diagnostics - call this from your main code"""
+    global shutdown_diagnostics
+    shutdown_diagnostics = ShutdownDiagnostics(telegram_function)
+    logger.info("Enhanced shutdown diagnostics initialized")
+
+# Modified health monitoring function
+def monitor_system_health():
+    """Monitor system health and log warnings"""
+    try:
+        memory_percent = psutil.virtual_memory().percent
+        cpu_percent = psutil.cpu_percent(interval=1)
+        
+        if memory_percent > 90:
+            shutdown_diagnostics.log_health_warning("MEMORY", f"{memory_percent:.1f}%")
+        if cpu_percent > 95:
+            shutdown_diagnostics.log_health_warning("CPU", f"{cpu_percent:.1f}%")
+        
+        # Log uptime periodically
+        if shutdown_diagnostics:
+            uptime = datetime.now() - shutdown_diagnostics.start_time
+            if uptime.seconds % 3600 < 60:  # Every hour
+                logger.info(f"Bot uptime: {int(uptime.total_seconds()/3600)}h {int((uptime.seconds%3600)/60)}m")
+                
+    except Exception as e:
+        logger.error(f"Health monitoring error: {e}")
+
+# Integration function for your existing code
+def integrate_with_existing_bot():
+    """Add this to your existing trading_loop.py"""
+    print("""
+    # Add these imports to your trading_loop.py:
+    from enhanced_diagnostics import setup_enhanced_diagnostics, monitor_system_health
+    
+    # In your main() function, add:
+    setup_enhanced_diagnostics(send_telegram_message)  # Pass your telegram function
+    
+    # In your main trading loop, add periodic health checks:
+    if loop_count % 6 == 0:  # Every 30 minutes (assuming 5-min intervals)
+        monitor_system_health()
+    """)
 
 class InMemoryStockMemory:
     def __init__(self):
@@ -1810,7 +2045,10 @@ def main_advanced_trading_loop():
                 continue
             
             print(f"\n[{current_time.strftime('%H:%M:%S')}] Advanced Analysis Cycle #{loop_count}")
-            
+
+            if loop_count % 6 == 0:
+                monitor_system_health()
+
             # Analyze all stocks with advanced logic
             for i, ticker in enumerate(TICKERS):
                 if memory.shutdown_flag:
@@ -1912,7 +2150,8 @@ def main():
     """Main entry point for the advanced trading bot"""
     # Set up exit handlers first
     setup_exit_handlers()
-    
+    setup_enhanced_diagnostics(send_telegram_message)
+
     # Verify required libraries
     try:
         import talib
@@ -1957,3 +2196,11 @@ def main():
 
 if __name__ == "__main__":
     main()
+    setup_enhanced_diagnostics()
+    logger.info("Diagnostics test - press Ctrl+C to test shutdown detection")
+    try:
+        while True:
+            time.sleep(10)
+            monitor_system_health()
+    except KeyboardInterrupt:
+        logger.info("Manual interrupt received")
