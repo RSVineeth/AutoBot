@@ -10,3 +10,4 @@ TA-Lib
 numpy
 schedule
 statistics
+psutil
