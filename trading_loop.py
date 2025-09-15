@@ -19,7 +19,7 @@ import os
 import logging
 import psutil
 import subprocess
-from enhanced_diagnostics import setup_enhanced_diagnostics, monitor_system_health
+# from enhanced_diagnostics import setup_enhanced_diagnostics, monitor_system_health
 
 # import json  
 
