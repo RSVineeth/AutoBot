@@ -52,52 +52,11 @@ logger = logging.getLogger(__name__)
 # ============================
 
 # Telegram Configuration
-TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
-TELEGRAM_CHAT_ID = ['1012793457','1209666577']
+# TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
+# TELEGRAM_CHAT_ID = ['1012793457','1209666577']
 
 # Trading Configuration
-TICKERS = [
-"INFY.NS","ITC.NS","TATAMOTORS.NS","DABUR.NS","ACC.NS","TATACONSUM.NS",
-"BAJFINANCE.NS","MUTHOOTFIN.NS","IDFCFIRSTB.NS","RBLBANK.NS","AUBANK.NS",
-"ADANIPORTS.NS","COALINDIA.NS","BPCL.NS","TATAPOWER.NS","RVNL.NS","BEL.NS","LAURUSLABS.NS","NEULANDLAB.NS",
-"VEDL.NS","SAIL.NS","NMDC.NS","NATIONALUM.NS",
-"COCHINSHIP.NS","GRSE.NS","RITES.NS",
-"AFFLE.NS","KSOLVES.NS","NYKAA.NS",
-"GSFC.NS","GPIL.NS","CENTEXT.NS",
-"OLECTRA.NS","BDL.NS","MANAPPURAM.NS","INDRAMEDCO.NS"
-]
-# [
-# "BAJFINANCE.NS","BAJAJFINSV.NS","ADANIPORTS.NS","COALINDIA.NS","DRREDDY.NS","BPCL.NS","VEDL.NS","SAIL.NS","NMDC.NS","MOIL.NS",
-# "TATACONSUM.NS","MUTHOOTFIN.NS","MANAPPURAM.NS","LICHSGFIN.NS","UNIONBANK.NS","AUBANK.NS","IDBI.NS","IDEA.NS","RPOWER.NS","TATAPOWER.NS",
-# "FILATFASH.NS","SRESTHA.BO","JAMNAAUTO.NS","OLECTRA.NS","AFFLE.NS","BEL.NS","COCHINSHIP.NS","RVNL.NS","BDL.NS","NATIONALUM.NS",
-# "ARIHANTCAP.NS","GEOJITFSL.NS","MCLOUD.NS","CENTEXT.NS","RNBDENIMS.BO","GPIL.NS","TALBROAUTO.NS","GALLANTT.NS","RESPONIND.NS","NAM-INDIA.NS",
-# "ELECON.NS","GRSE.NS","RITES.NS","ZENTEC.NS","NEULANDLAB.NS","EMIL.NS","ACC.NS","ADANIPOWER.NS","ARE&M.NS","BTML.BO",
-# "COLPAL.NS","DABUR.NS","GSFC.NS","IDFCFIRSTB.NS","INDRAMEDCO.NS","INFY.NS","ITC.NS","KSOLVES.NS","LAURUSLABS.NS","NESTLEIND.NS",
-# "NYKAA.NS","RBLBANK.NS","TATAMOTORS.NS"
-# ]
-
-# [
-#   "RELIANCE.NS","TCS.NS","INFY.NS","HDFCBANK.NS","ITC.NS","BHARTIARTL.NS","SBIN.NS","LT.NS","HCLTECH.NS","WIPRO.NS",
-#   "HINDUNILVR.NS","BAJFINANCE.NS","MARUTI.NS","KOTAKBANK.NS","ASIANPAINT.NS","NESTLEIND.NS","DMART.NS","BAJAJFINSV.NS","TITAN.NS","ADANIPORTS.NS",
-#   "AXISBANK.NS","ICICIBANK.NS","SUNPHARMA.NS","ULTRACEMCO.NS","NTPC.NS","POWERGRID.NS","TECHM.NS","M&M.NS","TATAMOTORS.NS","COALINDIA.NS",
-#   "JSWSTEEL.NS","TATASTEEL.NS","INDUSINDBK.NS","GRASIM.NS","DRREDDY.NS","BRITANNIA.NS","CIPLA.NS","DIVISLAB.NS","EICHERMOT.NS","HEROMOTOCO.NS",
-#   "HINDALCO.NS","BAJAJ-AUTO.NS","SHREE.NS","APOLLOHOSP.NS","ONGC.NS","IOC.NS","BPCL.NS","HDFCLIFE.NS","SBILIFE.NS","VEDL.NS",
-#   "ADANIGREEN.NS","ADANIENT.NS","ADANITRANS.NS","GODREJCP.NS","PIDILITIND.NS","DABUR.NS","MARICO.NS","COLPAL.NS","MCDOWELL-N.NS","BERGEPAINT.NS",
-#   "AMBUJACEM.NS","ACC.NS","SHREECEM.NS","RAMCO.NS","DALBHARAT.NS","SAIL.NS","NMDC.NS","MOIL.NS","GMRINFRA.NS","IRCTC.NS",
-#   "ZOMATO.NS","NYKAA.NS","PAYTM.NS","POLICYBZR.NS","TATACONSUM.NS","MUTHOOTFIN.NS","BAJAJHLDNG.NS","CHOLAFIN.NS","LTF.NS","MANAPPURAM.NS",
-#   "RECLTD.NS","PFC.NS","LICHSGFIN.NS","HUDCO.NS","CANBK.NS","PNB.NS","BANKBARODA.NS","UNIONBANK.NS","IDFCFIRSTB.NS","FEDERALBNK.NS",
-#   "RBLBANK.NS","BANDHANBNK.NS","AUBANK.NS","YESBANK.NS","IDBI.NS","IDEA.NS","BHARTI.NS","RCOM.NS","MTNL.NS","BSNL.NS",
-#   "RELCAPITAL.NS","RPOWER.NS","ADANIPOWER.NS","TATAPOWER.NS","NHPC.NS","FILATFASH.NS","SRESTHA.BO","HARSHILAGR.BO","GTLINFRA.NS","OBEROIRLTY.NS",
-#   "JAMNAAUTO.NS","KSOLVES.NS","OLECTRA.NS","ARE&M.NS","AFFLE.NS","BEL.NS","LAURUSLABS.NS","KRBL.NS","GSFC.NS","SVARTCORP.BO",
-#   "SWASTIVI.BO","BTML.NS","SULABEN.BO","CRYSTAL.BO","TILAK.BO","COMFINTE.BO","COCHINSHIP.NS","RVNL.NS","SHAILY.NS","BDL.NS",
-#   "JYOTICNC.NS","NATIONALUM.NS","KRONOX.NS","SAKSOFT.NS","ARIHANTCAP.NS","GEOJITFSL.NS","GRAUWEIL.BO","MCLOUD.NS","LKPSEC.BO","TARACHAND.NS",
-#   "CENTEXT.NS","IRISDOREME.NS","BLIL.BO","RNBDENIMS.BO","ONEPOINT.NS","SONAMLTD.NS","GATEWAY.NS","RSYSTEMS.BO","INDRAMEDCO.NS","JYOTHYLAB.NS",
-#   "FCL.NS","MANINFRA.NS","GPIL.NS","JAGSNPHARM.NS","HSCL.NS","JWL.NS","BSOFT.NS","MARKSANS.NS","TALBROAUTO.NS","GALLANTT.NS",
-#   "RESPONIND.NS","NAM-INDIA.NS","MONARCH.NS","ELECON.NS","SHANTIGEAR.NS","JASH.NS","GARFIBRES.NS","VISHNU.NS","GRSE.NS","RITES.NS",
-#   "AEGISLOG.NS","ZENTEC.NS","DELHIVERY.NS","IFCI.NS","CDSL.NS","NUVAMA.NS","NEULANDLAB.NS","GODFRYPHLP.NS","BAJAJHFL.NS","HBLENGINE.NS",
-#   "DLF.NS","RKFORGE.NS","EMIL.NS","JMFINANCIL.NS"
-# ]
-# [
+# TICKERS = [
 #     "FILATFASH.NS", "SRESTHA.BO", "HARSHILAGR.BO", "GTLINFRA.NS", "ITC.NS", "OBEROIRLTY.NS",
 #     "JAMNAAUTO.NS", "KSOLVES.NS", "ADANIGREEN.NS", "TATAMOTORS.NS", "OLECTRA.NS", "ARE&M.NS",
 #     "AFFLE.NS", "BEL.NS", "SUNPHARMA.NS", "LAURUSLABS.NS", "RELIANCE.NS", "KRBL.NS", "ONGC.NS",
@@ -178,6 +137,140 @@ MARKET_START = "09:00"
 MARKET_END = "16:00"
 ALIVE_CHECK_MORNING = "09:15"
 ALIVE_CHECK_EVENING = "15:00"
+
+# ============================
+# GLOBAL VARIABLES
+# ============================
+
+# class AdvancedStockMemory:
+#     def __init__(self):
+#         self.holdings = {}  # {ticker: {'shares': int, 'entry_price': float, 'entry_time': datetime}}
+#         self.sell_thresholds = {}  # {ticker: float}
+#         self.highest_prices = {}  # {ticker: float}
+#         self.alerts_sent = {}  # {ticker: {'52w_high': bool, 'breakout': bool, 'support': bool}}
+#         self.last_action_status = {}  # {ticker: 'HOLD'/'WAIT'/'BUY_SIGNAL'/'SELL_SIGNAL'}
+#         self.price_history = {}  # {ticker: deque of last 20 prices}
+#         self.volume_history = {}  # {ticker: deque of last 20 volumes}
+#         self.signal_strength = {}  # {ticker: float (0-100)}
+#         self.market_sentiment = 'NEUTRAL'  # 'BULLISH', 'BEARISH', 'NEUTRAL'
+#         self.correlation_matrix = {}
+#         self.last_alive_check = None
+#         self.session_start_time = datetime.now()
+#         self.total_trades = 0
+#         self.profitable_trades = 0
+#         self.total_pnl = 0.0
+#         self.max_drawdown = 0.0
+#         self.peak_portfolio_value = 0.0
+#         self.shutdown_flag = False  # Flag for graceful shutdown
+
+        
+#         # Initialize price and volume history
+#         for ticker in TICKERS:
+#             self.price_history[ticker] = deque(maxlen=20)
+#             self.volume_history[ticker] = deque(maxlen=20)
+#             self.alerts_sent[ticker] = {'52w_high': False, 'breakout': False, 'support': False}
+#             self.signal_strength[ticker] = 0.0
+
+# memory = AdvancedStockMemory()
+
+# class PersistentStockMemory:
+#     def __init__(self, persistence_file="trading_memory.json"):
+#         self.persistence_file = persistence_file
+#         self.holdings = {}
+#         self.sell_thresholds = {}
+#         self.highest_prices = {}
+#         self.alerts_sent = {}
+#         self.last_action_status = {}
+#         self.price_history = {}
+#         self.volume_history = {}
+#         self.signal_strength = {}
+#         self.market_sentiment = 'NEUTRAL'
+#         self.correlation_matrix = {}
+#         self.last_alive_check = None
+#         self.session_start_time = datetime.now()
+#         self.total_trades = 0
+#         self.profitable_trades = 0
+#         self.total_pnl = 0.0
+#         self.max_drawdown = 0.0
+#         self.peak_portfolio_value = 0.0
+#         self.shutdown_flag = False
+        
+#         # NEW: Trade cooldown tracking
+#         self.trade_cooldowns = {}  # {ticker: last_trade_time}
+#         self.consecutive_losses = {}  # {ticker: count}
+        
+#         # Load existing data
+#         self.load_memory()
+        
+#         # Initialize for new tickers
+#         for ticker in TICKERS:
+#             if ticker not in self.price_history:
+#                 self.price_history[ticker] = deque(maxlen=20)
+#                 self.volume_history[ticker] = deque(maxlen=20)
+#                 self.alerts_sent[ticker] = {'52w_high': False, 'breakout': False, 'support': False}
+#                 self.signal_strength[ticker] = 0.0
+#                 self.trade_cooldowns[ticker] = None
+#                 self.consecutive_losses[ticker] = 0
+
+#     def save_memory(self):
+#         """Save memory state to file"""
+#         try:
+#             memory_data = {
+#                 'holdings': self.holdings,
+#                 'sell_thresholds': self.sell_thresholds,
+#                 'highest_prices': self.highest_prices,
+#                 'alerts_sent': self.alerts_sent,
+#                 'total_trades': self.total_trades,
+#                 'profitable_trades': self.profitable_trades,
+#                 'total_pnl': self.total_pnl,
+#                 'max_drawdown': self.max_drawdown,
+#                 'peak_portfolio_value': self.peak_portfolio_value,
+#                 'trade_cooldowns': {k: v.isoformat() if v else None for k, v in self.trade_cooldowns.items()},
+#                 'consecutive_losses': self.consecutive_losses,
+#                 'last_save': datetime.now().isoformat()
+#             }
+            
+#             with open(self.persistence_file, 'w') as f:
+#                 json.dump(memory_data, f, indent=2, default=str)
+            
+#             logger.info(f"Memory saved successfully to {self.persistence_file}")
+            
+#         except Exception as e:
+#             logger.error(f"Error saving memory: {e}")
+
+#     def load_memory(self):
+#         """Load memory state from file"""
+#         try:
+#             if os.path.exists(self.persistence_file):
+#                 with open(self.persistence_file, 'r') as f:
+#                     memory_data = json.load(f)
+                
+#                 self.holdings = memory_data.get('holdings', {})
+#                 self.sell_thresholds = memory_data.get('sell_thresholds', {})
+#                 self.highest_prices = memory_data.get('highest_prices', {})
+#                 self.alerts_sent = memory_data.get('alerts_sent', {})
+#                 self.total_trades = memory_data.get('total_trades', 0)
+#                 self.profitable_trades = memory_data.get('profitable_trades', 0)
+#                 self.total_pnl = memory_data.get('total_pnl', 0.0)
+#                 self.max_drawdown = memory_data.get('max_drawdown', 0.0)
+#                 self.peak_portfolio_value = memory_data.get('peak_portfolio_value', 0.0)
+#                 self.consecutive_losses = memory_data.get('consecutive_losses', {})
+                
+#                 # Load cooldown times
+#                 cooldowns = memory_data.get('trade_cooldowns', {})
+#                 self.trade_cooldowns = {}
+#                 for ticker, time_str in cooldowns.items():
+#                     if time_str:
+#                         self.trade_cooldowns[ticker] = datetime.fromisoformat(time_str)
+#                     else:
+#                         self.trade_cooldowns[ticker] = None
+                
+#                 logger.info(f"Memory loaded successfully from {self.persistence_file}")
+                
+#         except Exception as e:
+#             logger.error(f"Error loading memory: {e}")
+
+# memory = PersistentStockMemory()
 
 class ShutdownDiagnostics:
     def __init__(self, telegram_sender=None):
@@ -375,166 +468,22 @@ def setup_enhanced_diagnostics(telegram_function=None):
     logger.info("Enhanced shutdown diagnostics initialized")
 
 # Modified health monitoring function
-# def monitor_system_health():
-#     """Monitor system health and log warnings"""
-#     try:
-#         memory_percent = psutil.virtual_memory().percent
-#         cpu_percent = psutil.cpu_percent(interval=1)
-        
-#         if memory_percent > 90:
-#             shutdown_diagnostics.log_health_warning("MEMORY", f"{memory_percent:.1f}%")
-#         if cpu_percent > 95:
-#             shutdown_diagnostics.log_health_warning("CPU", f"{cpu_percent:.1f}%")
-        
-#         # Log uptime periodically
-#         if shutdown_diagnostics:
-#             uptime = datetime.now() - shutdown_diagnostics.start_time
-#             if uptime.seconds % 3600 < 60:  # Every hour
-#                 logger.info(f"Bot uptime: {int(uptime.total_seconds()/3600)}h {int((uptime.seconds%3600)/60)}m")
-                
-#     except Exception as e:
-#         logger.error(f"Health monitoring error: {e}")
-
-# def monitor_system_health():
-#     """Monitor system health and log warnings with Telegram alerts"""
-#     try:
-#         memory_info = psutil.virtual_memory()
-#         memory_percent = memory_info.percent
-#         cpu_percent = psutil.cpu_percent(interval=1)
-        
-#         # Get current process memory usage in MB
-#         process = psutil.Process()
-#         process_memory_mb = process.memory_info().rss / 1024 / 1024
-        
-#         # Memory alerts
-#         if memory_percent > 90:
-#             shutdown_diagnostics.log_health_warning("SYSTEM_MEMORY", f"{memory_percent:.1f}%")
-        
-#         if cpu_percent > 95:
-#             shutdown_diagnostics.log_health_warning("CPU", f"{cpu_percent:.1f}%")
-        
-#         # Process memory alert with Telegram notification
-#         if process_memory_mb > 450:  # 450MB threshold
-#             warning_msg = f"🚨 HIGH MEMORY USAGE ALERT 🚨\n"
-#             warning_msg += f"💾 Bot Memory: {process_memory_mb:.1f}MB / 512MB\n"
-#             warning_msg += f"📊 System Memory: {memory_percent:.1f}%\n"
-#             warning_msg += f"⚡ CPU: {cpu_percent:.1f}%\n"
-#             warning_msg += f"🧹 Triggering cleanup..."
-            
-#             send_telegram_message(warning_msg)
-#             logger.warning(f"HIGH PROCESS MEMORY: {process_memory_mb:.1f}MB")
-            
-#             # Trigger immediate cleanup
-#             cleanup_memory()
-            
-#             # Check memory again after cleanup
-#             new_memory_mb = psutil.Process().memory_info().rss / 1024 / 1024
-#             reduction = process_memory_mb - new_memory_mb
-            
-#             if reduction > 0:
-#                 cleanup_msg = f"✅ Memory cleanup completed\n"
-#                 cleanup_msg += f"📉 Freed: {reduction:.1f}MB\n"
-#                 cleanup_msg += f"💾 Current: {new_memory_mb:.1f}MB"
-#                 send_telegram_message(cleanup_msg)
-        
-#         # Log memory stats periodically
-#         if shutdown_diagnostics:
-#             uptime = datetime.now() - shutdown_diagnostics.start_time
-#             if uptime.seconds % 3600 < 60:  # Every hour
-#                 logger.info(f"Memory Status: Process={process_memory_mb:.1f}MB, System={memory_percent:.1f}%")
-                
-#     except Exception as e:
-#         logger.error(f"Health monitoring error: {e}")
-
-# def monitor_staged_system_health():
-#     """Enhanced system health monitoring for staged loading"""
-#     try:
-#         memory_info = psutil.virtual_memory()
-#         memory_percent = memory_info.percent
-#         cpu_percent = psutil.cpu_percent(interval=1)
-        
-#         # Get current process memory usage
-#         process = psutil.Process()
-#         process_memory_mb = process.memory_info().rss / 1024 / 1024
-        
-#         # Get cache size
-#         cache_size_mb = data_cache.get_cache_size_mb()
-        
-#         # System alerts
-#         if memory_percent > 90:
-#             shutdown_diagnostics.log_health_warning("SYSTEM_MEMORY", f"{memory_percent:.1f}%")
-        
-#         if cpu_percent > 95:
-#             shutdown_diagnostics.log_health_warning("CPU", f"{cpu_percent:.1f}%")
-        
-#         # Process memory alert with staged loading context
-#         if process_memory_mb > 400:  # Lower threshold for staged loading
-#             warning_msg = f"🚨 STAGED LOADING MEMORY ALERT 🚨\n"
-#             warning_msg += f"💾 Bot Memory: {process_memory_mb:.1f}MB / 512MB\n"
-#             warning_msg += f"🗄️ Cache Size: {cache_size_mb:.1f}MB\n"
-#             warning_msg += f"📊 System Memory: {memory_percent:.1f}%\n"
-#             warning_msg += f"⚡ CPU: {cpu_percent:.1f}%\n"
-#             warning_msg += f"🧹 Triggering enhanced cleanup..."
-            
-#             send_telegram_message(warning_msg)
-#             logger.warning(f"HIGH STAGED PROCESS MEMORY: {process_memory_mb:.1f}MB")
-            
-#             # Trigger enhanced cleanup
-#             enhanced_cleanup_memory()
-            
-#             # Check memory again after cleanup
-#             new_memory_mb = psutil.Process().memory_info().rss / 1024 / 1024
-#             new_cache_mb = data_cache.get_cache_size_mb()
-#             reduction = process_memory_mb - new_memory_mb
-            
-#             if reduction > 0:
-#                 cleanup_msg = f"✅ Staged cleanup completed\n"
-#                 cleanup_msg += f"📉 Process freed: {reduction:.1f}MB\n"
-#                 cleanup_msg += f"💾 Process current: {new_memory_mb:.1f}MB\n"
-#                 cleanup_msg += f"🗄️ Cache current: {new_cache_mb:.1f}MB"
-#                 send_telegram_message(cleanup_msg)
-        
-#         # Periodic memory logging
-#         if shutdown_diagnostics:
-#             uptime = datetime.now() - shutdown_diagnostics.start_time
-#             if uptime.seconds % 3600 < 60:  # Every hour
-#                 logger.info(f"Staged Memory Status: Process={process_memory_mb:.1f}MB, Cache={cache_size_mb:.1f}MB, System={memory_percent:.1f}%")
-                
-#     except Exception as e:
-#         logger.error(f"Staged health monitoring error: {e}")
-
-def monitor_staged_system_health():
-    """Fixed system health monitoring"""
+def monitor_system_health():
+    """Monitor system health and log warnings"""
     try:
-        memory_info = psutil.virtual_memory()
-        memory_percent = memory_info.percent
+        memory_percent = psutil.virtual_memory().percent
         cpu_percent = psutil.cpu_percent(interval=1)
         
-        process = psutil.Process()
-        process_memory_mb = process.memory_info().rss / 1024 / 1024
+        if memory_percent > 90:
+            shutdown_diagnostics.log_health_warning("MEMORY", f"{memory_percent:.1f}%")
+        if cpu_percent > 95:
+            shutdown_diagnostics.log_health_warning("CPU", f"{cpu_percent:.1f}%")
         
-        # This line was causing crashes - add safety check:
-        try:
-            cache_size_mb = data_cache.get_cache_size_mb()
-        except Exception as e:
-            logger.warning(f"Could not get cache size: {e}")
-            cache_size_mb = 0.0
-        
-        # Lower threshold for 512MB instance
-        if process_memory_mb > 300:  # Much more conservative
-            warning_msg = f"🚨 MEMORY ALERT 🚨\n"
-            warning_msg += f"💾 Bot: {process_memory_mb:.1f}MB/512MB\n"
-            warning_msg += f"🗄️ Cache: {cache_size_mb:.1f}MB\n"
-            warning_msg += f"🧹 Cleanup triggered..."
-            
-            send_telegram_message(warning_msg)
-            enhanced_cleanup_memory()
-        
-        # Log every hour
+        # Log uptime periodically
         if shutdown_diagnostics:
             uptime = datetime.now() - shutdown_diagnostics.start_time
-            if uptime.seconds % 3600 < 60:
-                logger.info(f"Memory: Process={process_memory_mb:.1f}MB, Cache={cache_size_mb:.1f}MB")
+            if uptime.seconds % 3600 < 60:  # Every hour
+                logger.info(f"Bot uptime: {int(uptime.total_seconds()/3600)}h {int((uptime.seconds%3600)/60)}m")
                 
     except Exception as e:
         logger.error(f"Health monitoring error: {e}")
@@ -592,315 +541,44 @@ class InMemoryStockMemory:
             self.last_trade_time[ticker] = None
 
 
-    def is_in_cooldown(ticker: str) -> bool:
-        """Check if ticker is in trading cooldown"""
-        if ticker not in memory.trade_cooldowns or memory.trade_cooldowns[ticker] is None:
-            return False
-        
-        cooldown_end = memory.trade_cooldowns[ticker] + timedelta(minutes=TRADE_COOLDOWN_MINUTES)
-        return datetime.now() < cooldown_end
-
-    def should_skip_ticker(ticker: str) -> tuple[bool, str]:
-        """Enhanced ticker filtering"""
-        
-        # Check if ticker is in our approved list
-        if ticker not in TICKERS:
-            return True, "Not in approved ticker list"
-        
-        # Check blacklist
-        if ticker in memory.ticker_blacklist:
-            return True, "Blacklisted ticker"
-        
-        # Check cooldown
-        if is_in_cooldown(ticker):
-            remaining_minutes = int(((memory.trade_cooldowns[ticker] + 
-                                    timedelta(minutes=TRADE_COOLDOWN_MINUTES)) - 
-                                datetime.now()).total_seconds() / 60)
-            return True, f"Cooldown ({remaining_minutes}min left)"
-        
-        # Check consecutive losses
-        if memory.consecutive_losses.get(ticker, 0) >= MAX_CONSECUTIVE_LOSSES:
-            return True, f"Too many losses ({memory.consecutive_losses[ticker]})"
-        
-        # Check daily trade limit
-        if memory.total_trades >= MAX_DAILY_TRADES:
-            return True, "Daily limit reached"
-        
-        return False, "OK"
-# class OptimizedDataCache:
-#     def __init__(self):
-#         self.historical_cache = {}
-#         self.cache_timestamps = {}
-#         self.CACHE_EXPIRE_HOURS = 2  # 2 hour expiry
-#         self.indicators_cache = {}
+def is_in_cooldown(ticker: str) -> bool:
+    """Check if ticker is in trading cooldown"""
+    if ticker not in memory.trade_cooldowns or memory.trade_cooldowns[ticker] is None:
+        return False
     
-#     def get_cached_historical(self, ticker: str, period: str = "6mo") -> Optional[pd.DataFrame]:
-#         """Get cached historical data or fetch if expired"""
-#         now = datetime.now()
-#         cache_key = f"{ticker}_{period}"
-        
-#         # Check if cache exists and is fresh
-#         if (cache_key in self.historical_cache and 
-#             cache_key in self.cache_timestamps and
-#             (now - self.cache_timestamps[cache_key]).total_seconds() < self.CACHE_EXPIRE_HOURS * 3600):
-#             logger.info(f"Using cached data for {ticker}")
-#             return self.historical_cache[cache_key]
-        
-#         # Fetch fresh data
-#         logger.info(f"Fetching fresh data for {ticker}")
-#         df = get_stock_data(ticker, period)
-#         if df is not None:
-#             self.historical_cache[cache_key] = df
-#             self.cache_timestamps[cache_key] = now
-        
-#         return df
+    cooldown_end = memory.trade_cooldowns[ticker] + timedelta(minutes=TRADE_COOLDOWN_MINUTES)
+    return datetime.now() < cooldown_end
+
+def should_skip_ticker(ticker: str) -> tuple[bool, str]:
+    """Enhanced ticker filtering"""
     
-#     def get_cached_indicators(self, ticker: str, df: pd.DataFrame) -> Dict:
-#         """Get cached indicators or calculate if expired"""
-#         now = datetime.now()
-#         cache_key = f"{ticker}_indicators"
-        
-#         if (cache_key in self.indicators_cache and 
-#             cache_key in self.cache_timestamps and
-#             (now - self.cache_timestamps[cache_key]).total_seconds() < self.CACHE_EXPIRE_HOURS * 3600):
-#             return self.indicators_cache[cache_key]
-        
-#         # Calculate fresh indicators
-#         indicators = calculate_advanced_indicators(df)
-#         if indicators:
-#             self.indicators_cache[cache_key] = indicators
-#             self.cache_timestamps[cache_key] = now
-        
-#         return indicators
-
-class OptimizedDataCache:
-    def __init__(self):
-        self.historical_cache = {}
-        self.cache_timestamps = {}
-        self.indicators_cache = {}
-        self.CACHE_EXPIRE_HOURS = 2
-        self.MAX_CACHE_SIZE_MB = 80  # Conservative limit for 512MB instance
-        
-    def get_cache_size_mb(self) -> float:
-        """Calculate current cache size in MB - CRITICAL METHOD"""
-        try:
-            import sys
-            total_size = 0
-            
-            # Calculate historical cache size
-            for key, df in self.historical_cache.items():
-                if df is not None:
-                    total_size += df.memory_usage(deep=True).sum()
-            
-            # Calculate indicators cache size  
-            for key, indicators in self.indicators_cache.items():
-                if indicators:
-                    total_size += sys.getsizeof(indicators)
-                    for k, v in indicators.items():
-                        if hasattr(v, 'nbytes'):  # numpy array
-                            total_size += v.nbytes
-                        else:
-                            total_size += sys.getsizeof(v)
-            
-            return total_size / (1024 * 1024)
-        except Exception as e:
-            logger.warning(f"Error calculating cache size: {e}")
-            return 0.0
-
-    def cleanup_old_cache_entries(self):
-        """Remove expired cache entries - CRITICAL METHOD"""
-        try:
-            now = datetime.now()
-            cutoff = now - timedelta(hours=self.CACHE_EXPIRE_HOURS)
-            
-            expired_keys = [key for key, timestamp in self.cache_timestamps.items() 
-                          if timestamp < cutoff]
-            
-            cleaned_count = 0
-            for key in expired_keys:
-                if key in self.historical_cache:
-                    del self.historical_cache[key]
-                    cleaned_count += 1
-                if key in self.indicators_cache:
-                    del self.indicators_cache[key]
-                    cleaned_count += 1
-                if key in self.cache_timestamps:
-                    del self.cache_timestamps[key]
-            
-            if cleaned_count > 0:
-                logger.info(f"Cache cleanup: Removed {cleaned_count} expired entries")
-                
-        except Exception as e:
-            logger.error(f"Error in cache cleanup: {e}")
+    # Check if ticker is in our approved list
+    if ticker not in TICKERS:
+        return True, "Not in approved ticker list"
     
-    def force_cleanup_if_needed(self):
-        """Force cleanup if cache exceeds limit - CRITICAL METHOD"""
-        current_size = self.get_cache_size_mb()
-        if current_size > self.MAX_CACHE_SIZE_MB:
-            logger.warning(f"Cache size {current_size:.1f}MB exceeds limit - forcing cleanup")
-            
-            if self.cache_timestamps:
-                sorted_entries = sorted(self.cache_timestamps.items(), key=lambda x: x[1])
-                entries_to_remove = len(sorted_entries) // 2  # Remove oldest 50%
-                
-                for key, _ in sorted_entries[:entries_to_remove]:
-                    if key in self.historical_cache:
-                        del self.historical_cache[key]
-                    if key in self.indicators_cache:
-                        del self.indicators_cache[key]
-                    if key in self.cache_timestamps:
-                        del self.cache_timestamps[key]
-                
-                new_size = self.get_cache_size_mb()
-                logger.info(f"Forced cleanup: Size reduced from {current_size:.1f}MB to {new_size:.1f}MB")
-
-    def get_cached_historical(self, ticker: str, period: str = "6mo") -> Optional[pd.DataFrame]:
-        """Get cached historical data with memory management"""
-        now = datetime.now()
-        cache_key = f"{ticker}_{period}"
-        
-        # Check cache first
-        if (cache_key in self.historical_cache and 
-            cache_key in self.cache_timestamps and
-            (now - self.cache_timestamps[cache_key]).total_seconds() < self.CACHE_EXPIRE_HOURS * 3600):
-            logger.debug(f"Using cached data for {ticker}")
-            return self.historical_cache[cache_key]
-        
-        # Force cleanup before fetching new data
-        self.force_cleanup_if_needed()
-        
-        # Fetch fresh data
-        logger.info(f"Fetching fresh data for {ticker}")
-        df = get_stock_data(ticker, period)
-        if df is not None:
-            self.historical_cache[cache_key] = df
-            self.cache_timestamps[cache_key] = now
-        
-        return df
+    # Check blacklist
+    if ticker in memory.ticker_blacklist:
+        return True, "Blacklisted ticker"
     
-    def get_cached_indicators(self, ticker: str, df: pd.DataFrame) -> Dict:
-        """Get cached indicators with compression - CRITICAL FIX"""
-        now = datetime.now()
-        cache_key = f"{ticker}_indicators"
-        
-        # Check cache
-        if (cache_key in self.indicators_cache and 
-            cache_key in self.cache_timestamps and
-            (now - self.cache_timestamps[cache_key]).total_seconds() < self.CACHE_EXPIRE_HOURS * 3600):
-            logger.debug(f"Using cached indicators for {ticker}")
-            return self.indicators_cache[cache_key]
-        
-        # Calculate fresh indicators
-        logger.debug(f"Calculating indicators for {ticker}")
-        indicators = calculate_advanced_indicators(df)
-        if indicators:
-            # CRITICAL: Compress indicators to single values
-            compressed_indicators = {}
-            for key, value in indicators.items():
-                if value is not None:
-                    latest_value = safe_extract(value)
-                    if latest_value is not None:
-                        compressed_indicators[key] = latest_value
-            
-            self.indicators_cache[cache_key] = compressed_indicators
-            self.cache_timestamps[cache_key] = now
-            
-            logger.debug(f"Cached compressed indicators for {ticker}: {len(compressed_indicators)} values")
-        
-        return indicators  # Return full for immediate use, but cache compressed
-
+    # Check cooldown
+    if is_in_cooldown(ticker):
+        remaining_minutes = int(((memory.trade_cooldowns[ticker] + 
+                                timedelta(minutes=TRADE_COOLDOWN_MINUTES)) - 
+                               datetime.now()).total_seconds() / 60)
+        return True, f"Cooldown ({remaining_minutes}min left)"
+    
+    # Check consecutive losses
+    if memory.consecutive_losses.get(ticker, 0) >= MAX_CONSECUTIVE_LOSSES:
+        return True, f"Too many losses ({memory.consecutive_losses[ticker]})"
+    
+    # Check daily trade limit
+    if memory.total_trades >= MAX_DAILY_TRADES:
+        return True, "Daily limit reached"
+    
+    return False, "OK"
 
 memory = InMemoryStockMemory()
-data_cache = OptimizedDataCache()  # Add this line
 
-def cleanup_memory():
-    """Periodic memory cleanup every 2 hours"""
-    try:
-        cutoff = datetime.now() - timedelta(hours=2)
-        
-        # Clear expired historical data cache
-        expired_historical = [key for key, timestamp in data_cache.cache_timestamps.items() 
-                            if timestamp < cutoff and '_indicators' not in key]
-        
-        # Clear expired indicators cache
-        expired_indicators = [key for key, timestamp in data_cache.cache_timestamps.items() 
-                            if timestamp < cutoff and '_indicators' in key]
-        
-        # Remove expired entries
-        for key in expired_historical:
-            if key in data_cache.historical_cache:
-                del data_cache.historical_cache[key]
-            if key in data_cache.cache_timestamps:
-                del data_cache.cache_timestamps[key]
-        
-        for key in expired_indicators:
-            if key in data_cache.indicators_cache:
-                del data_cache.indicators_cache[key]
-            if key in data_cache.cache_timestamps:
-                del data_cache.cache_timestamps[key]
-        
-        # Clear old price/volume history beyond 10 items
-        for ticker in TICKERS:
-            if ticker in memory.price_history and len(memory.price_history[ticker]) > 10:
-                # Keep only last 10 items
-                while len(memory.price_history[ticker]) > 10:
-                    memory.price_history[ticker].popleft()
-            
-            if ticker in memory.volume_history and len(memory.volume_history[ticker]) > 10:
-                while len(memory.volume_history[ticker]) > 10:
-                    memory.volume_history[ticker].popleft()
-        
-        # Force garbage collection
-        import gc
-        gc.collect()
-        
-        total_cleaned = len(expired_historical) + len(expired_indicators)
-        if total_cleaned > 0:
-            logger.info(f"Memory cleanup: Removed {total_cleaned} expired cache entries")
-            
-    except Exception as e:
-        logger.error(f"Error in memory cleanup: {e}")   
-
-def enhanced_cleanup_memory():
-    """Enhanced memory cleanup for staged loading"""
-    try:
-        # Original cleanup
-        cleanup_memory()
-        
-        # Enhanced cache cleanup
-        data_cache.cleanup_old_cache_entries()
-        data_cache.force_cleanup_if_needed()
-        
-        # Clear old deque data
-        cutoff_time = datetime.now() - timedelta(hours=1)
-        for ticker in TICKERS:
-            # Keep only recent price/volume history
-            if ticker in memory.price_history:
-                while (len(memory.price_history[ticker]) > 5):
-                    memory.price_history[ticker].popleft()
-            
-            if ticker in memory.volume_history:
-                while (len(memory.volume_history[ticker]) > 5):
-                    memory.volume_history[ticker].popleft()
-        
-        # Reset alerts for better memory usage
-        for ticker in TICKERS:
-            if ticker in memory.alerts_sent:
-                # Reset breakout alerts after 2 hours
-                if all(memory.alerts_sent[ticker].values()):
-                    memory.alerts_sent[ticker] = {'52w_high': False, 'breakout': False, 'support': False}
-        
-        # Force garbage collection
-        import gc
-        gc.collect()
-        
-        # Log memory status after cleanup
-        cache_size = data_cache.get_cache_size_mb()
-        process_memory = psutil.Process().memory_info().rss / 1024 / 1024
-        logger.info(f"Enhanced cleanup completed: Process={process_memory:.1f}MB, Cache={cache_size:.1f}MB")
-        
-    except Exception as e:
-        logger.error(f"Error in enhanced memory cleanup: {e}")
 
 def is_in_cooldown(ticker: str) -> bool:
     """Check if ticker is in trading cooldown"""
@@ -1172,29 +850,16 @@ def calculate_advanced_indicators(df: pd.DataFrame) -> Dict:
 #                 momentum_score += 10
 #             strength_components.append(min(momentum_score, 25))
         
-#         # Volume strength (20% weight) - FIXED SECTION
+#         # Volume strength (20% weight)
 #         volume_sma = safe_extract(indicators.get('volume_sma_10'))
-#         if volume_sma and ticker in memory.volume_history:
-#             volume_history = memory.volume_history[ticker]
-            
-#             # Handle both scalar and array cases
-#             if hasattr(volume_history, '__len__') and not isinstance(volume_history, str):
-#                 # It's an array/list
-#                 if len(volume_history) > 0:
-#                     current_volume = volume_history[-1]
-#                 else:
-#                     current_volume = None
-#             else:
-#                 # It's a scalar value
-#                 current_volume = volume_history
-            
-#             if current_volume is not None:
-#                 volume_score = 0
-#                 if current_volume > volume_sma * MIN_VOLUME_SPIKE:  # Volume spike
-#                     volume_score += 20
-#                 elif current_volume > volume_sma * 1.2:  # Good volume
-#                     volume_score += 10
-#                 strength_components.append(min(volume_score, 20))
+#         if volume_sma and ticker in memory.volume_history and len(memory.volume_history[ticker]) > 0:
+#             current_volume = memory.volume_history[ticker][-1]
+#             volume_score = 0
+#             if current_volume > volume_sma * MIN_VOLUME_SPIKE:  # Volume spike
+#                 volume_score += 20
+#             elif current_volume > volume_sma * 1.2:  # Good volume
+#                 volume_score += 10
+#             strength_components.append(min(volume_score, 20))
         
 #         # Volatility check (15% weight)
 #         atr = safe_extract(indicators.get('atr_14'))
@@ -1224,84 +889,99 @@ def calculate_advanced_indicators(df: pd.DataFrame) -> Dict:
         
 #     except Exception as e:
 #         print(f"Error calculating signal strength for {ticker}: {e}")
-#         import traceback
-#         print(f"Traceback: {traceback.format_exc()}")
 #         return 0.0
 
 def calculate_signal_strength(ticker: str, indicators: Dict, current_price: float) -> float:
-    """Calculate signal strength using cached single values"""
+    """Calculate overall signal strength (0-100)"""
     try:
         if not indicators:
             return 0.0
         
         strength_components = []
         
-        # All indicators are now single values from cache
-        sma_20 = indicators.get('sma_20')  # No need for safe_extract
-        sma_50 = indicators.get('sma_50') 
-        ema_12 = indicators.get('ema_12')
-        ema_26 = indicators.get('ema_26')
-        rsi = indicators.get('rsi_14')
-        macd = indicators.get('macd')
-        macd_signal = indicators.get('macd_signal')
-        
         # Trend strength (30% weight)
+        sma_20 = safe_extract(indicators.get('sma_20'))
+        sma_50 = safe_extract(indicators.get('sma_50'))
+        ema_12 = safe_extract(indicators.get('ema_12'))
+        ema_26 = safe_extract(indicators.get('ema_26'))
+        
         if all([sma_20, sma_50, ema_12, ema_26]):
             trend_score = 0
-            if current_price > sma_20 > sma_50:
+            if current_price > sma_20 > sma_50:  # Strong uptrend
                 trend_score += 25
-            if ema_12 > ema_26:
+            if ema_12 > ema_26:  # EMA bullish crossover
                 trend_score += 15
-            if current_price > sma_20:
+            if current_price > sma_20:  # Above short-term MA
                 trend_score += 10
             strength_components.append(min(trend_score, 30))
         
         # Momentum strength (25% weight)
+        rsi = safe_extract(indicators.get('rsi_14'))
+        macd = safe_extract(indicators.get('macd'))
+        macd_signal = safe_extract(indicators.get('macd_signal'))
+        
         if rsi and macd and macd_signal:
             momentum_score = 0
-            if 30 < rsi < 70:
+            if 30 < rsi < 70:  # RSI in good range
                 momentum_score += 15
-            if macd > macd_signal and macd > 0:
+            if macd > macd_signal and macd > 0:  # MACD bullish
                 momentum_score += 10
             strength_components.append(min(momentum_score, 25))
         
-        # Volume strength (20% weight)
-        volume_sma = indicators.get('volume_sma_10')
-        if volume_sma and ticker in memory.volume_history and len(memory.volume_history[ticker]) > 0:
-            current_volume = memory.volume_history[ticker][-1]
-            volume_score = 0
-            if current_volume > volume_sma * MIN_VOLUME_SPIKE:
-                volume_score += 20
-            elif current_volume > volume_sma * 1.2:
-                volume_score += 10
-            strength_components.append(min(volume_score, 20))
+        # Volume strength (20% weight) - FIXED SECTION
+        volume_sma = safe_extract(indicators.get('volume_sma_10'))
+        if volume_sma and ticker in memory.volume_history:
+            volume_history = memory.volume_history[ticker]
+            
+            # Handle both scalar and array cases
+            if hasattr(volume_history, '__len__') and not isinstance(volume_history, str):
+                # It's an array/list
+                if len(volume_history) > 0:
+                    current_volume = volume_history[-1]
+                else:
+                    current_volume = None
+            else:
+                # It's a scalar value
+                current_volume = volume_history
+            
+            if current_volume is not None:
+                volume_score = 0
+                if current_volume > volume_sma * MIN_VOLUME_SPIKE:  # Volume spike
+                    volume_score += 20
+                elif current_volume > volume_sma * 1.2:  # Good volume
+                    volume_score += 10
+                strength_components.append(min(volume_score, 20))
         
         # Volatility check (15% weight)
-        atr = indicators.get('atr_14')
-        volatility_ratio = indicators.get('volatility_ratio', 1.0)
+        atr = safe_extract(indicators.get('atr_14'))
+        volatility_ratio = safe_extract(indicators.get('volatility_ratio'))
         if atr and volatility_ratio:
             volatility_score = 0
-            if volatility_ratio < 1.5:
+            if volatility_ratio < 1.5:  # Low volatility is good
                 volatility_score += 15
             elif volatility_ratio < 2.0:
                 volatility_score += 10
             strength_components.append(min(volatility_score, 15))
         
         # Support/Resistance (10% weight)
-        bb_lower = indicators.get('bb_lower')
-        bb_upper = indicators.get('bb_upper')
+        bb_lower = safe_extract(indicators.get('bb_lower'))
+        bb_upper = safe_extract(indicators.get('bb_upper'))
         if bb_lower and bb_upper:
             sr_score = 0
-            if current_price > bb_lower and current_price < bb_upper:
+            if current_price > bb_lower and current_price < bb_upper:  # Within bands
                 sr_score += 5
-            if current_price > bb_lower * 1.02:
+            if current_price > bb_lower * 1.02:  # Above support with buffer
                 sr_score += 5
             strength_components.append(min(sr_score, 10))
         
-        return min(sum(strength_components), 100.0)
+        # Calculate weighted average
+        total_strength = sum(strength_components)
+        return min(total_strength, 100.0)
         
     except Exception as e:
-        logger.error(f"Error calculating cached signal strength for {ticker}: {e}")
+        print(f"Error calculating signal strength for {ticker}: {e}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
         return 0.0
 
 def calculate_market_sentiment() -> str:
@@ -1332,6 +1012,47 @@ def calculate_market_sentiment() -> str:
     except Exception as e:
         print(f"Error calculating market sentiment: {e}")
         return 'NEUTRAL'
+
+# def safe_extract(arr, default=None):
+#     """Safely extract last value from numpy array"""
+#     if arr is None or len(arr) == 0:
+#         return default
+#     val = arr[-1]
+#     return float(val) if not np.isnan(val) else default
+
+# def safe_extract(value):
+#     """Safely extract a numeric value from various data types"""
+#     if value is None:
+#         return None
+    
+#     try:
+#         # Handle pandas Series
+#         if hasattr(value, 'iloc'):
+#             if len(value) > 0:
+#                 return float(value.iloc[-1])
+#             else:
+#                 return None
+        
+#         # Handle numpy arrays
+#         elif hasattr(value, 'shape'):
+#             if value.shape[0] > 0:
+#                 return float(value[-1])
+#             else:
+#                 return None
+        
+#         # Handle lists
+#         elif isinstance(value, (list, tuple)):
+#             if len(value) > 0:
+#                 return float(value[-1])
+#             else:
+#                 return None
+        
+#         # Handle scalar values
+#         else:
+#             return float(value)
+            
+#     except (ValueError, TypeError, IndexError):
+#         return None
 
 def safe_extract(value, fallback=None):
     """
@@ -1443,6 +1164,247 @@ def get_realtime_data(ticker: str) -> Optional[Dict]:
     except Exception as e:
         print(f"Error getting real-time data for {ticker}: {e}")
         return None
+
+# ============================
+# ADVANCED TRADING LOGIC
+# ============================
+
+# def advanced_should_buy(ticker: str, indicators: Dict, current_price: float, realtime_data: Dict) -> Tuple[bool, str]:
+#     """Advanced buy signal detection"""
+#     try:
+#         if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
+#             return False, "Already holding"
+        
+#         # Market sentiment filter
+#         if memory.market_sentiment == 'BEARISH':
+#             return False, "Bearish market"
+        
+#         # Get signal strength
+#         strength = memory.signal_strength.get(ticker, 0)
+#         if strength < 65:
+#             return False, f"Signal too weak ({strength:.1f})"
+        
+#         # Multiple condition checks
+#         buy_conditions = []
+#         reasons = []
+        
+#         # 1. Trend confirmation
+#         sma_20 = safe_extract(indicators.get('sma_20'))
+#         sma_50 = safe_extract(indicators.get('sma_50'))
+#         ema_12 = safe_extract(indicators.get('ema_12'))
+#         ema_26 = safe_extract(indicators.get('ema_26'))
+        
+#         if all([sma_20, sma_50, ema_12, ema_26]):
+#             if current_price > sma_20 > sma_50 and ema_12 > ema_26:
+#                 buy_conditions.append(True)
+#                 reasons.append("Trend bullish")
+#             else:
+#                 buy_conditions.append(False)
+        
+#         # 2. RSI confirmation
+#         rsi = safe_extract(indicators.get('rsi_14'))
+#         if rsi and 25 < rsi < 65:  # Not overbought, slight oversold OK
+#             buy_conditions.append(True)
+#             reasons.append(f"RSI good ({rsi:.1f})")
+#         else:
+#             buy_conditions.append(False)
+        
+#         # 3. MACD confirmation
+#         macd = safe_extract(indicators.get('macd'))
+#         macd_signal = safe_extract(indicators.get('macd_signal'))
+#         if macd and macd_signal and macd > macd_signal:
+#             buy_conditions.append(True)
+#             reasons.append("MACD bullish")
+#         else:
+#             buy_conditions.append(False)
+        
+#         # 4. Volume confirmation
+#         volume_sma = safe_extract(indicators.get('volume_sma_10'))
+#         current_volume = realtime_data.get('volume', 0)
+#         if volume_sma and current_volume > volume_sma * 1.3:
+#             buy_conditions.append(True)
+#             reasons.append("Volume spike")
+#         else:
+#             buy_conditions.append(False)
+        
+#         # 5. Volatility filter
+#         volatility_ratio = safe_extract(indicators.get('volatility_ratio'))
+#         if volatility_ratio and volatility_ratio < 2.0:
+#             buy_conditions.append(True)
+#             reasons.append("Low volatility")
+#         else:
+#             buy_conditions.append(False)
+        
+#         # 6. Bollinger Bands position
+#         bb_lower = safe_extract(indicators.get('bb_lower'))
+#         bb_upper = safe_extract(indicators.get('bb_upper'))
+#         if bb_lower and bb_upper and bb_lower < current_price < bb_upper * 0.95:
+#             buy_conditions.append(True)
+#             reasons.append("BB position good")
+#         else:
+#             buy_conditions.append(False)
+        
+#         # Need at least 4 out of 6 conditions to be true
+#         conditions_met = sum(buy_conditions)
+#         if conditions_met >= 4:
+#             return True, f"Strong buy ({conditions_met}/6): " + ", ".join(reasons[:3])
+        
+#         return False, f"Insufficient conditions ({conditions_met}/6)"
+        
+#     except Exception as e:
+#         print(f"Error in advanced_should_buy for {ticker}: {e}")
+#         return False, "Error in analysis"
+
+# def advanced_should_sell(ticker: str, indicators: Dict, current_price: float) -> Tuple[bool, str]:
+#     """Advanced sell signal detection"""
+#     if ticker not in memory.holdings or memory.holdings[ticker].get('shares', 0) == 0:
+#         return False, "No position"
+    
+#     try:
+#         entry_price = memory.holdings[ticker].get('entry_price', 0)
+#         current_pnl = ((current_price - entry_price) / entry_price) * 100 if entry_price > 0 else 0
+        
+#         # Stop-loss check
+#         if ticker in memory.sell_thresholds and current_price <= memory.sell_thresholds[ticker]:
+#             return True, f"Stop-loss hit (PnL: {current_pnl:+.2f}%)"
+        
+#         # Profit-taking conditions
+#         if current_pnl > 8:  # 8% profit
+#             rsi = safe_extract(indicators.get('rsi_14'))
+#             if rsi and rsi > 75:
+#                 return True, f"Profit-taking (PnL: {current_pnl:+.2f}%, RSI: {rsi:.1f})"
+        
+#         # Trend reversal detection
+#         sma_20 = safe_extract(indicators.get('sma_20'))
+#         ema_12 = safe_extract(indicators.get('ema_12'))
+#         ema_26 = safe_extract(indicators.get('ema_26'))
+        
+#         if all([sma_20, ema_12, ema_26]):
+#             if current_price < sma_20 and ema_12 < ema_26:
+#                 return True, f"Trend reversal (PnL: {current_pnl:+.2f}%)"
+        
+#         # MACD bearish divergence
+#         macd = safe_extract(indicators.get('macd'))
+#         macd_signal = safe_extract(indicators.get('macd_signal'))
+#         if macd and macd_signal and macd < macd_signal and macd < 0:
+#             return True, f"MACD bearish (PnL: {current_pnl:+.2f}%)"
+        
+#         # Time-based exit (holding too long)
+#         if ticker in memory.holdings and 'entry_time' in memory.holdings[ticker]:
+#             holding_time = datetime.now() - memory.holdings[ticker]['entry_time']
+#             if holding_time.days > 5 and current_pnl < 2:  # 5 days with low profit
+#                 return True, f"Time exit (PnL: {current_pnl:+.2f}%, {holding_time.days}d)"
+        
+#         return False, f"Hold (PnL: {current_pnl:+.2f}%)"
+        
+#     except Exception as e:
+#         print(f"Error in advanced_should_sell for {ticker}: {e}")
+#         return False, "Error in sell analysis"
+
+# def execute_advanced_buy(ticker: str, current_price: float, indicators: Dict, reason: str):
+#     """Execute advanced buy order with enhanced tracking"""
+#     try:
+#         atr = safe_extract(indicators.get('atr_14'))
+#         if atr is None or atr <= 0:
+#             atr = current_price * 0.02
+        
+#         # Dynamic position sizing based on volatility
+#         volatility_ratio = safe_extract(indicators.get('volatility_ratio'), 1.0)
+#         adjusted_shares = max(1, int(SHARES_TO_BUY / volatility_ratio))
+        
+#         memory.holdings[ticker] = {
+#             'shares': adjusted_shares,
+#             'entry_price': current_price,
+#             'entry_time': datetime.now()
+#         }
+        
+#         # Dynamic stop-loss based on ATR and support levels
+#         support_level = safe_extract(indicators.get('support_1'), current_price * 0.95)
+#         atr_stop = current_price - (ATR_MULTIPLIER * atr)
+#         dynamic_stop = max(support_level, atr_stop)
+        
+#         memory.sell_thresholds[ticker] = dynamic_stop
+#         memory.highest_prices[ticker] = current_price
+        
+#         memory.total_trades += 1
+        
+#         # Enhanced buy alert
+#         symbol = ticker.replace('.NS', '').replace('.BO', '')
+#         signal_strength = memory.signal_strength.get(ticker, 0)
+#         rsi_val = safe_extract(indicators.get('rsi_14'))
+        
+#         message = f"🟢 *ADVANCED BUY SIGNAL*\n"
+#         message += f" {symbol} - Rs.{current_price:.2f}\n"
+#         message += f" Shares: {adjusted_shares} (Dynamic sizing)\n"
+#         message += f" Signal Strength: {signal_strength:.1f}/100\n"
+#         message += f" RSI: {rsi_val:.1f} | ATR: Rs.{atr:.2f}\n"
+#         message += f" Smart Stop-loss: Rs.{dynamic_stop:.2f}\n"
+#         message += f" Reason: {reason}"
+        
+#         send_telegram_message(message)
+#         print(f"[ADVANCED BUY] {symbol} @ Rs.{current_price:.2f} | Strength: {signal_strength:.1f}")
+        
+#     except Exception as e:
+#         print(f"Error executing advanced buy for {ticker}: {e}")
+
+# def execute_advanced_sell(ticker: str, current_price: float, reason: str):
+#     """Execute advanced sell order with enhanced tracking"""
+#     try:
+#         if ticker not in memory.holdings:
+#             return
+        
+#         shares = memory.holdings[ticker].get('shares', 0)
+#         entry_price = memory.holdings[ticker].get('entry_price', 0)
+#         entry_time = memory.holdings[ticker].get('entry_time', datetime.now())
+        
+#         if shares == 0:
+#             return
+        
+#         # Calculate detailed P&L
+#         total_change = (current_price - entry_price) * shares
+#         change_percent = ((current_price - entry_price) / entry_price) * 100
+#         holding_period = datetime.now() - entry_time
+        
+#         # Update session statistics
+#         memory.total_pnl += total_change
+#         if total_change > 0:
+#             memory.profitable_trades += 1
+        
+#         # Update drawdown tracking
+#         current_portfolio_value = memory.total_pnl
+#         if current_portfolio_value > memory.peak_portfolio_value:
+#             memory.peak_portfolio_value = current_portfolio_value
+#         else:
+#             drawdown = ((memory.peak_portfolio_value - current_portfolio_value) / memory.peak_portfolio_value) * 100
+#             if drawdown > memory.max_drawdown:
+#                 memory.max_drawdown = drawdown
+        
+#         # Clear position
+#         memory.holdings[ticker] = {'shares': 0, 'entry_price': 0}
+#         if ticker in memory.sell_thresholds:
+#             del memory.sell_thresholds[ticker]
+#         if ticker in memory.highest_prices:
+#             del memory.highest_prices[ticker]
+        
+#         memory.alerts_sent[ticker] = {'52w_high': False, 'breakout': False, 'support': False}
+        
+#         symbol = ticker.replace('.NS', '').replace('.BO', '')
+#         profit_emoji = "" if total_change >= 0 else ""
+#         holding_days = holding_period.days
+#         holding_hours = holding_period.seconds // 3600
+        
+#         message = f"🔴 *ADVANCED SELL SIGNAL*\n"
+#         message += f" {symbol} - Rs.{current_price:.2f}\n"
+#         message += f" Sold {shares} shares\n"
+#         message += f"{profit_emoji} P&L: Rs.{total_change:.2f} ({change_percent:+.2f}%)\n"
+#         message += f" Held: {holding_days}d {holding_hours}h\n"
+#         message += f" Reason: {reason}"
+        
+#         send_telegram_message(message)
+#         print(f"[ADVANCED SELL] {symbol} @ Rs.{current_price:.2f} | P&L: Rs.{total_change:.2f} | {reason}")
+        
+#     except Exception as e:
+#         print(f"Error executing advanced sell for {ticker}: {e}")
 
 def advanced_should_buy(ticker: str, indicators: Dict, current_price: float, realtime_data: Dict) -> Tuple[bool, str]:
     """Improved buy signal detection with better filtering"""
@@ -1855,189 +1817,9 @@ def has_earnings_soon(ticker: str) -> bool:
 # MAIN ANALYSIS FUNCTION
 # ============================
 
-# def analyze_stock_advanced(ticker: str):
-#     """Advanced stock analysis with comprehensive signal generation"""
-#     try:
-#         # Check shutdown flag        
-#         if memory.shutdown_flag:
-#             return
-        
-#         # Fetch enhanced historical data
-#         historical_df = get_stock_data(ticker, period="6mo")
-#         if historical_df is None or historical_df.empty:
-#             print(f"No historical data for {ticker}")
-#             return
-        
-#         # Calculate advanced indicators
-#         indicators = calculate_advanced_indicators(historical_df)
-#         if not indicators:
-#             print(f"Failed to calculate indicators for {ticker}")
-#             return
-        
-#         # Get enhanced real-time data
-#         realtime_data = get_realtime_data(ticker)
-#         if not realtime_data:
-#             print(f"No real-time data for {ticker}")
-#             return
-        
-#         current_price = realtime_data['price']
-        
-#         # Calculate signal strength
-#         signal_strength = calculate_signal_strength(ticker, indicators, current_price)
-#         memory.signal_strength[ticker] = signal_strength
-        
-#         # Update trailing stops for existing positions
-#         if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
-#             update_dynamic_trailing_stop(ticker, current_price, indicators)
-        
-#         # Check for advanced alerts
-#         check_advanced_alerts(ticker, current_price, indicators, realtime_data)
-        
-#         # Advanced trading decisions
-#         should_sell, sell_reason = advanced_should_sell(ticker, indicators, current_price)
-#         if should_sell:
-#             execute_advanced_sell(ticker, current_price, sell_reason)
-#             memory.last_action_status[ticker] = 'SELL_SIGNAL'
-#         else:
-#             should_buy, buy_reason = advanced_should_buy(ticker, indicators, current_price, realtime_data)
-#             if should_buy:
-#                 execute_advanced_buy(ticker, current_price, indicators, buy_reason)
-#                 memory.last_action_status[ticker] = 'BUY_SIGNAL'
-#             else:
-#                 # Determine current status
-#                 if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
-#                     memory.last_action_status[ticker] = f'HOLD ({sell_reason})'
-#                 else:
-#                     memory.last_action_status[ticker] = f'WAIT ({buy_reason})'
-                    
-#     except Exception as e:
-#         print(f"Error in advanced analysis for {ticker}: {e}")
-#         memory.last_action_status[ticker] = 'ERROR'
-
-# ============================
-# STAGED ANALYSIS FUNCTION
-# ============================
-
-# def analyze_stock_staged(ticker: str):
-#     """Staged stock analysis with memory optimization"""
-#     try:
-#         # Check shutdown flag        
-#         if memory.shutdown_flag:
-#             return
-        
-#         # Pre-analysis memory check
-#         current_process_mb = psutil.Process().memory_info().rss / 1024 / 1024
-#         if current_process_mb > 400:  # 400MB threshold
-#             logger.warning(f"High memory usage before {ticker} analysis: {current_process_mb:.1f}MB")
-#             cleanup_memory()
-        
-#         # Stage 1: Fetch historical data (will use cache if available)
-#         logger.debug(f"Stage 1: Loading historical data for {ticker}")
-#         historical_df = data_cache.get_cached_historical(ticker, period="6mo")
-#         if historical_df is None or historical_df.empty:
-#             logger.warning(f"No historical data for {ticker}")
-#             return
-        
-#         # Stage 2: Calculate indicators (will use cache if available)  
-#         logger.debug(f"Stage 2: Calculating indicators for {ticker}")
-#         indicators = data_cache.get_cached_indicators(ticker, historical_df)
-#         if not indicators:
-#             logger.warning(f"Failed to calculate indicators for {ticker}")
-#             return
-        
-#         # Stage 3: Get real-time data (lightweight)
-#         logger.debug(f"Stage 3: Getting real-time data for {ticker}")
-#         realtime_data = get_realtime_data(ticker)
-#         if not realtime_data:
-#             logger.warning(f"No real-time data for {ticker}")
-#             return
-        
-#         current_price = realtime_data['price']
-        
-#         # Stage 4: Quick analysis using cached indicators
-#         logger.debug(f"Stage 4: Performing analysis for {ticker}")
-        
-#         # Calculate signal strength using cached values
-#         signal_strength = calculate_signal_strength(ticker, indicators, current_price)
-#         memory.signal_strength[ticker] = signal_strength
-        
-#         # Update trailing stops for existing positions
-#         if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
-#             update_dynamic_trailing_stop(ticker, current_price, indicators)
-        
-#         # Check for alerts
-#         check_advanced_alerts(ticker, current_price, indicators, realtime_data)
-        
-#         # Trading decisions
-#         should_sell, sell_reason = advanced_should_sell(ticker, indicators, current_price)
-#         if should_sell:
-#             execute_advanced_sell(ticker, current_price, sell_reason)
-#             memory.last_action_status[ticker] = 'SELL_SIGNAL'
-#         else:
-#             should_buy, buy_reason = advanced_should_buy(ticker, indicators, current_price, realtime_data)
-#             if should_buy:
-#                 execute_advanced_buy(ticker, current_price, indicators, buy_reason)
-#                 memory.last_action_status[ticker] = 'BUY_SIGNAL'
-#             else:
-#                 if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
-#                     memory.last_action_status[ticker] = f'HOLD ({sell_reason})'
-#                 else:
-#                     memory.last_action_status[ticker] = f'WAIT ({buy_reason})'
-        
-#         # Stage 5: Memory cleanup after analysis
-#         logger.debug(f"Stage 5: Post-analysis cleanup for {ticker}")
-        
-#         # Force garbage collection every 10 tickers
-#         import gc
-#         if TICKERS.index(ticker) % 10 == 9:
-#             gc.collect()
-            
-#         # Log memory usage
-#         post_analysis_mb = psutil.Process().memory_info().rss / 1024 / 1024
-#         logger.debug(f"Memory after {ticker}: {post_analysis_mb:.1f}MB")
-                    
-#     except Exception as e:
-#         logger.error(f"Error in staged analysis for {ticker}: {e}")
-#         memory.last_action_status[ticker] = 'ERROR'
-
-def analyze_stock_staged(ticker: str):
-    """Fixed staged analysis with proper caching"""
+def analyze_stock_advanced(ticker: str):
+    """Advanced stock analysis with comprehensive signal generation"""
     try:
-        if memory.shutdown_flag:
-            return
-        
-        # Memory check
-        current_process_mb = psutil.Process().memory_info().rss / 1024 / 1024
-        if current_process_mb > 350:  # Lower threshold for safety
-            logger.warning(f"High memory before {ticker}: {current_process_mb:.1f}MB")
-            enhanced_cleanup_memory()
-        
-        # Stage 1: Get cached historical data
-        historical_df = data_cache.get_cached_historical(ticker, period="6mo")
-        if historical_df is None or historical_df.empty:
-            logger.warning(f"No historical data for {ticker}")
-            return
-        
-        # Stage 2: Get cached compressed indicators
-        indicators = data_cache.get_cached_indicators(ticker, historical_df)
-        if not indicators:
-            logger.warning(f"Failed to calculate indicators for {ticker}")
-            return
-        
-        # Stage 3: Get real-time data
-        realtime_data = get_realtime_data(ticker)
-        if not realtime_data:
-            logger.warning(f"No real-time data for {ticker}")
-            return
-        
-        current_price = realtime_data['price']
-        
-        # Stage 4: Use cached signal strength calculation
-        signal_strength = calculate_signal_strength(ticker, indicators, current_price)
-        memory.signal_strength[ticker] = signal_strength
-        
-        # Rest of analysis using cached indicators...
-        # (Your existing trading logic here)
         # Check shutdown flag        
         if memory.shutdown_flag:
             return
@@ -2089,69 +1871,10 @@ def analyze_stock_staged(ticker: str):
                     memory.last_action_status[ticker] = f'HOLD ({sell_reason})'
                 else:
                     memory.last_action_status[ticker] = f'WAIT ({buy_reason})'
-
-    except Exception as e:
-        logger.error(f"Error in fixed staged analysis for {ticker}: {e}")
-        memory.last_action_status[ticker] = 'ERROR'
-
-# def analyze_stock_advanced(ticker: str):
-#     """Advanced stock analysis with comprehensive signal generation"""
-#     try:
-#         # Check shutdown flag        
-#         if memory.shutdown_flag:
-#             return
-        
-#         # Fetch enhanced historical data
-#         historical_df = get_stock_data(ticker, period="6mo")
-#         if historical_df is None or historical_df.empty:
-#             print(f"No historical data for {ticker}")
-#             return
-        
-#         # Calculate advanced indicators
-#         indicators = calculate_advanced_indicators(historical_df)
-#         if not indicators:
-#             print(f"Failed to calculate indicators for {ticker}")
-#             return
-        
-#         # Get enhanced real-time data
-#         realtime_data = get_realtime_data(ticker)
-#         if not realtime_data:
-#             print(f"No real-time data for {ticker}")
-#             return
-        
-#         current_price = realtime_data['price']
-        
-#         # Calculate signal strength
-#         signal_strength = calculate_signal_strength(ticker, indicators, current_price)
-#         memory.signal_strength[ticker] = signal_strength
-        
-#         # Update trailing stops for existing positions
-#         if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
-#             update_dynamic_trailing_stop(ticker, current_price, indicators)
-        
-#         # Check for advanced alerts
-#         check_advanced_alerts(ticker, current_price, indicators, realtime_data)
-        
-#         # Advanced trading decisions
-#         should_sell, sell_reason = advanced_should_sell(ticker, indicators, current_price)
-#         if should_sell:
-#             execute_advanced_sell(ticker, current_price, sell_reason)
-#             memory.last_action_status[ticker] = 'SELL_SIGNAL'
-#         else:
-#             should_buy, buy_reason = advanced_should_buy(ticker, indicators, current_price, realtime_data)
-#             if should_buy:
-#                 execute_advanced_buy(ticker, current_price, indicators, buy_reason)
-#                 memory.last_action_status[ticker] = 'BUY_SIGNAL'
-#             else:
-#                 # Determine current status
-#                 if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
-#                     memory.last_action_status[ticker] = f'HOLD ({sell_reason})'
-#                 else:
-#                     memory.last_action_status[ticker] = f'WAIT ({buy_reason})'
                     
-#     except Exception as e:
-#         print(f"Error in advanced analysis for {ticker}: {e}")
-#         memory.last_action_status[ticker] = 'ERROR'
+    except Exception as e:
+        print(f"Error in advanced analysis for {ticker}: {e}")
+        memory.last_action_status[ticker] = 'ERROR'
 
 # ============================
 # ENHANCED CONSOLE OUTPUT
@@ -2289,199 +2012,139 @@ def is_alive_check_time() -> bool:
 # MAIN TRADING LOOP
 # ============================
 
-# def main_advanced_trading_loop():
-#     """Main advanced trading loop with enhanced features"""
-#     print(" Advanced Stock Trading Bot Started!")
-#     # send_telegram_message(" *Advanced Stock Trading Bot v2.0 Started!*\n Enhanced with 15+ technical indicators\n Smart signal strength analysis\n Dynamic position sizing & stop-loss")
-#     send_telegram_message("🤖 *Advanced Stock Trading Bot v2.0 Started!* 🚀\n"
-#                         "⚡ Enhanced with 15+ technical indicators\n"
-#                         "🧠 Smart signal strength analysis\n"
-#                         "🎯 Dynamic position sizing & stop-loss ✅")
-
-#     loop_count = 0
-#     last_cleanup = datetime.now()
-
-#     while True:
-#         try:
-#             # Check shutdown flag
-#             if memory.shutdown_flag:
-#                 break
-
-#             current_time = datetime.now()
-#             loop_count += 1
-            
-#             if (current_time - last_cleanup).total_seconds() > 7200:  # 2 hours
-#                 logger.info("Starting scheduled memory cleanup...")
-#                 cleanup_memory()
-#                 last_cleanup = current_time
-
-#             # Send alive notifications
-#             if is_alive_check_time():
-#                 if (memory.last_alive_check is None or 
-#                     (current_time - memory.last_alive_check).total_seconds() > 3600):
-#                     send_alive_notification()
-            
-#             # Only trade during market hours
-#             if not is_market_hours():
-#                 print(f"[{current_time.strftime('%H:%M:%S')}] Market closed. Waiting...")
-#                 time.sleep(CHECK_INTERVAL)
-#                 continue
-            
-#             print(f"\n[{current_time.strftime('%H:%M:%S')}] Advanced Analysis Cycle #{loop_count}")
-
-#             if loop_count % 6 == 0:
-#                 monitor_system_health()
-
-#             # Analyze all stocks with advanced logic
-#             for i, ticker in enumerate(TICKERS):
-#                 if memory.shutdown_flag:
-#                     break
-#                 print(f"Analyzing {ticker} ({i+1}/{len(TICKERS)})...", end=" ")
-#                 analyze_stock_advanced(ticker)
-#                 print("✓")
-#                 time.sleep(2)  # Rate limiting
-
-#             # Check shutdown flag after analysis
-#             if memory.shutdown_flag:
-#                 break
-
-#             # Update market sentiment
-#             memory.market_sentiment = calculate_market_sentiment()
-            
-#             # Print detailed status table
-#             if loop_count % 3 == 1 or is_alive_check_time():  # Every 3 cycles or during alive check times
-#                 print_advanced_status_table()
-            
-#             # Send periodic summary to Telegram
-#             if loop_count % 12 == 0:  # Every hour during market
-#                 active_positions = sum(1 for ticker in memory.holdings if memory.holdings[ticker].get('shares', 0) > 0)
-#                 strong_signals = sum(1 for strength in memory.signal_strength.values() if strength > 70)
-                
-#                 # summary_msg = f" *Hourly Summary*\n"
-#                 # summary_msg += f" Active: {active_positions} | Strong signals: {strong_signals}\n"
-#                 # summary_msg += f" Market: {memory.market_sentiment} | P&L: Rs.{memory.total_pnl:.2f}\n"
-#                 # summary_msg += f" Win rate: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "🎯 Win rate: 0%"
-                
-#                 summary_msg = f"⏰ *Hourly Summary* 📊\n"
-#                 summary_msg += f"🔄 Active: {active_positions} | ⚡ Strong signals: {strong_signals}\n"
-#                 summary_msg += f"📈 Market: {memory.market_sentiment} | 💰 P&L: Rs.{memory.total_pnl:.2f}\n"
-#                 summary_msg += f"🎯 Win rate: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "🎯 Win rate: 0%"
-
-#                 send_telegram_message(summary_msg)
-            
-#             print(f"[{current_time.strftime('%H:%M:%S')}] Cycle complete. Next analysis in {CHECK_INTERVAL//60} minutes...")
-            
-#         except KeyboardInterrupt:
-#             print("\n🛑 Advanced Bot stopped by user")
-#             cleanup_and_exit()
-#             break
-#         except Exception as e:
-#             print(f"Error in main advanced loop: {e}")
-#             # error_msg = f" *Advanced Bot Error*\nCycle #{loop_count}\nError: {str(e)[:100]}\nBot continuing..."
-#             error_msg = f"🚨 *Advanced Bot Error* ⚠️\n🔄 Cycle #{loop_count}\n❌ Error: {str(e)[:100]}\n✅ Bot continuing..."
-#             send_telegram_message(error_msg)
-        
-#         time.sleep(CHECK_INTERVAL)
-# ============================
-# MODIFIED MAIN LOOP
-# ============================
-
 def main_advanced_trading_loop():
-    """Main trading loop with staged loading"""
-    logger.info("🤖 Advanced Stock Trading Bot v2.0 with Staged Loading Started! 🚀")
+    """Main advanced trading loop with enhanced features"""
+    print(" Advanced Stock Trading Bot Started!")
+    # send_telegram_message(" *Advanced Stock Trading Bot v2.0 Started!*\n Enhanced with 15+ technical indicators\n Smart signal strength analysis\n Dynamic position sizing & stop-loss")
     send_telegram_message("🤖 *Advanced Stock Trading Bot v2.0 Started!* 🚀\n"
-                        "⚡ Enhanced with staged data loading\n"
-                        "🧠 Memory-optimized analysis\n"
-                        "🎯 40 ticker monitoring ✅")
+                        "⚡ Enhanced with 15+ technical indicators\n"
+                        "🧠 Smart signal strength analysis\n"
+                        "🎯 Dynamic position sizing & stop-loss ✅")
 
     loop_count = 0
-    last_cleanup = datetime.now()
-
+    
     while True:
         try:
+            # Check shutdown flag
             if memory.shutdown_flag:
                 break
 
             current_time = datetime.now()
             loop_count += 1
             
-            # Memory management
-            if (current_time - last_cleanup).total_seconds() > 7200:  # 2 hours
-                logger.info("Starting scheduled memory cleanup...")
-                cleanup_memory()
-                data_cache.cleanup_old_cache_entries()
-                last_cleanup = current_time
-
-            # Alive notifications
+            # Send alive notifications
             if is_alive_check_time():
                 if (memory.last_alive_check is None or 
                     (current_time - memory.last_alive_check).total_seconds() > 3600):
                     send_alive_notification()
             
-            # Market hours check
+            # Only trade during market hours
             if not is_market_hours():
-                logger.info(f"[{current_time.strftime('%H:%M:%S')}] Market closed. Waiting...")
+                print(f"[{current_time.strftime('%H:%M:%S')}] Market closed. Waiting...")
                 time.sleep(CHECK_INTERVAL)
                 continue
             
-            logger.info(f"\n[{current_time.strftime('%H:%M:%S')}] Staged Analysis Cycle #{loop_count}")
+            print(f"\n[{current_time.strftime('%H:%M:%S')}] Advanced Analysis Cycle #{loop_count}")
 
-            # System health monitoring
             if loop_count % 6 == 0:
-                monitor_staged_system_health()
+                monitor_system_health()
 
-            # Log cache status
-            cache_size = data_cache.get_cache_size_mb()
-            process_memory = psutil.Process().memory_info().rss / 1024 / 1024
-            logger.info(f"Memory status: Process={process_memory:.1f}MB, Cache={cache_size:.1f}MB")
-
-            # Analyze all stocks with staged loading
+            # Analyze all stocks with advanced logic
             for i, ticker in enumerate(TICKERS):
                 if memory.shutdown_flag:
                     break
-                
-                logger.debug(f"Analyzing {ticker} ({i+1}/{len(TICKERS)})...")
-                analyze_stock_staged(ticker)  # Use staged analysis
-                logger.debug(f"{ticker} ✓")
-                
-                # Brief pause between tickers
-                time.sleep(1)
+                print(f"Analyzing {ticker} ({i+1}/{len(TICKERS)})...", end=" ")
+                analyze_stock_advanced(ticker)
+                print("✓")
+                time.sleep(2)  # Rate limiting
 
+            # Check shutdown flag after analysis
             if memory.shutdown_flag:
                 break
 
             # Update market sentiment
             memory.market_sentiment = calculate_market_sentiment()
             
-            # Status reporting
-            if loop_count % 3 == 1 or is_alive_check_time():
+            # Print detailed status table
+            if loop_count % 3 == 1 or is_alive_check_time():  # Every 3 cycles or during alive check times
                 print_advanced_status_table()
             
-            # Hourly summary
-            if loop_count % 12 == 0:
+            # Send periodic summary to Telegram
+            if loop_count % 12 == 0:  # Every hour during market
                 active_positions = sum(1 for ticker in memory.holdings if memory.holdings[ticker].get('shares', 0) > 0)
                 strong_signals = sum(1 for strength in memory.signal_strength.values() if strength > 70)
                 
-                summary_msg = f"⏰ *Staged Loading Hourly Summary* 📊\n"
-                summary_msg += f"🔥 Active: {active_positions} | ⚡ Strong signals: {strong_signals}\n"
+                # summary_msg = f" *Hourly Summary*\n"
+                # summary_msg += f" Active: {active_positions} | Strong signals: {strong_signals}\n"
+                # summary_msg += f" Market: {memory.market_sentiment} | P&L: Rs.{memory.total_pnl:.2f}\n"
+                # summary_msg += f" Win rate: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "🎯 Win rate: 0%"
+                
+                summary_msg = f"⏰ *Hourly Summary* 📊\n"
+                summary_msg += f"🔄 Active: {active_positions} | ⚡ Strong signals: {strong_signals}\n"
                 summary_msg += f"📈 Market: {memory.market_sentiment} | 💰 P&L: Rs.{memory.total_pnl:.2f}\n"
                 summary_msg += f"🎯 Win rate: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "🎯 Win rate: 0%"
-                summary_msg += f"\n💾 Memory: {process_memory:.1f}MB"
 
                 send_telegram_message(summary_msg)
             
-            logger.info(f"[{current_time.strftime('%H:%M:%S')}] Staged cycle complete. Next analysis in {CHECK_INTERVAL//60} minutes...")
+            print(f"[{current_time.strftime('%H:%M:%S')}] Cycle complete. Next analysis in {CHECK_INTERVAL//60} minutes...")
             
         except KeyboardInterrupt:
-            logger.info("🛑 Staged Bot stopped by user")
+            print("\n🛑 Advanced Bot stopped by user")
             cleanup_and_exit()
             break
         except Exception as e:
-            logger.error(f"Error in staged trading loop: {e}")
-            error_msg = f"🚨 *Staged Bot Error* ⚠️\n🔄 Cycle #{loop_count}\n❌ Error: {str(e)[:100]}\n✅ Bot continuing..."
+            print(f"Error in main advanced loop: {e}")
+            # error_msg = f" *Advanced Bot Error*\nCycle #{loop_count}\nError: {str(e)[:100]}\nBot continuing..."
+            error_msg = f"🚨 *Advanced Bot Error* ⚠️\n🔄 Cycle #{loop_count}\n❌ Error: {str(e)[:100]}\n✅ Bot continuing..."
             send_telegram_message(error_msg)
         
         time.sleep(CHECK_INTERVAL)
+
+
+# if __name__ == "__main__":
+#     # Set up exit handlers first
+#     setup_exit_handlers()
+    
+#     # Verify required libraries
+#     try:
+#         import talib
+#         from tabulate import tabulate
+#         print("✅ All required libraries verified")
+#     except ImportError as e:
+#         if 'talib' in str(e):
+#             print("ERROR: TA-Lib not installed. Install with: pip install TA-Lib")
+#             print("On Windows, you might need to download the wheel from: https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib")
+#         elif 'tabulate' in str(e):
+#             print("ERROR: tabulate not installed. Install with: pip install tabulate")
+#         sys.exit(1)
+    
+#     # Configuration check
+#     if TELEGRAM_BOT_TOKEN == 'YOUR_BOT_TOKEN_HERE':
+#         print("⚠️  WARNING: Telegram bot token not configured. Messages will print to console.")
+    
+#     print("🔧 Advanced Configuration:")
+#     print(f"   📊 Monitoring {len(TICKERS)} stocks")
+#     print(f"   ⏰ Check interval: {CHECK_INTERVAL//60} minutes")
+#     print(f"   📈 ATR Multiplier: {ATR_MULTIPLIER}")
+#     print(f"   🎯 RSI Range: {RSI_OVERSOLD}-{RSI_OVERBOUGHT}")
+#     print(f"   📊 Volume Spike Threshold: {MIN_VOLUME_SPIKE}x")
+#     print(f"   💪 Signal Strength Threshold: {STRENGTH_THRESHOLD}")
+    
+#     # Print initial advanced status table
+#     print("🔄 Initializing advanced stock analysis...")
+#     try:
+#         print_advanced_status_table()
+#     except Exception as e:
+#         print(f"Error in initial analysis: {e}")
+    
+#     # Start the advanced trading bot
+#     try:
+#         main_advanced_trading_loop()
+#     except Exception as e:
+#         print(f"Fatal error: {e}")
+#         cleanup_and_exit()
+#     finally:
+#         print_final_summary()
 
 def main():
     """Main entry point for the advanced trading bot"""
@@ -2538,6 +2201,6 @@ if __name__ == "__main__":
     try:
         while True:
             time.sleep(10)
-            monitor_staged_system_health()
+            monitor_system_health()
     except KeyboardInterrupt:
         logger.info("Manual interrupt received")

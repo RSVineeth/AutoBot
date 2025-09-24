@@ -207,3 +207,150 @@
 2025-09-11 15:55:11,316 [INFO] [IMPROVED BUY] GSFC @ Rs.204.21 | Strength: 80.0
 2025-09-11 15:55:23,417 [INFO] [IMPROVED BUY] TILAK @ Rs.3.36 | Strength: 65.0
 2025-09-11 15:55:38,140 [INFO] [IMPROVED BUY] RSYSTEMS @ Rs.456.45 | Strength: 70.0
+2025-09-23 12:58:54,400 [INFO] Signal handlers set up successfully
+2025-09-23 12:58:54,402 [INFO] SIGTERM handler registered
+2025-09-23 12:58:54,403 [INFO] SIGINT handler registered
+2025-09-23 12:58:54,404 [INFO] === STARTUP DIAGNOSTICS ===
+2025-09-23 12:58:54,404 [INFO] Process ID: 16684
+2025-09-23 12:58:54,406 [INFO] Parent PID: 31200
+2025-09-23 12:58:54,406 [INFO] User: unknown
+2025-09-23 12:58:54,407 [INFO] Working Directory: C:\Users\ShivaVineeth\OneDrive - PROWESS SOFTWARE SERVICES PRIVATE LIMITED\Desktop\Python Git
+2025-09-23 12:58:54,408 [INFO] In Container: False
+2025-09-23 12:58:54,409 [INFO] Start Time: 2025-09-23 12:58:54.402244
+2025-09-23 12:58:54,410 [INFO] Parent Process: powershell.exe - C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -noexit -command
+2025-09-23 12:58:54,410 [INFO] === END STARTUP DIAGNOSTICS ===
+2025-09-23 12:58:54,411 [INFO] Enhanced shutdown diagnostics initialized
+2025-09-23 12:58:54,412 [INFO] All required libraries verified
+2025-09-23 12:58:54,413 [WARNING]  WARNING: Telegram bot token not configured. Messages will print to console.
+2025-09-23 12:58:54,413 [INFO]  Advanced Trading Bot Configuration:
+2025-09-23 12:58:54,414 [INFO]     Monitoring 0 stocks
+2025-09-23 12:58:54,415 [INFO]     Check interval: 5 minutes
+2025-09-23 12:58:54,417 [INFO]     ATR Multiplier: 2.5
+2025-09-23 12:58:54,417 [INFO]     RSI Range: 20-80
+2025-09-23 12:58:54,418 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-23 12:58:54,419 [INFO]     Signal Strength Threshold: 65
+2025-09-23 12:58:54,419 [INFO]  Initializing advanced stock analysis...
+2025-09-23 13:00:48,081 [INFO] Signal handlers set up successfully
+2025-09-23 13:00:48,082 [INFO] SIGTERM handler registered
+2025-09-23 13:00:48,083 [INFO] SIGINT handler registered
+2025-09-23 13:00:48,083 [INFO] === STARTUP DIAGNOSTICS ===
+2025-09-23 13:00:48,083 [INFO] Process ID: 34364
+2025-09-23 13:00:48,084 [INFO] Parent PID: 13804
+2025-09-23 13:00:48,084 [INFO] User: unknown
+2025-09-23 13:00:48,084 [INFO] Working Directory: C:\Users\ShivaVineeth\OneDrive - PROWESS SOFTWARE SERVICES PRIVATE LIMITED\Desktop\Python Git
+2025-09-23 13:00:48,085 [INFO] In Container: False
+2025-09-23 13:00:48,085 [INFO] Start Time: 2025-09-23 13:00:48.082532
+2025-09-23 13:00:48,088 [INFO] Parent Process: powershell.exe - C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -noexit -command
+2025-09-23 13:00:48,089 [INFO] === END STARTUP DIAGNOSTICS ===
+2025-09-23 13:00:48,089 [INFO] Enhanced shutdown diagnostics initialized
+2025-09-23 13:00:48,090 [INFO] All required libraries verified
+2025-09-23 13:00:48,090 [WARNING]  WARNING: Telegram bot token not configured. Messages will print to console.
+2025-09-23 13:00:48,090 [INFO]  Advanced Trading Bot Configuration:
+2025-09-23 13:00:48,091 [INFO]     Monitoring 0 stocks
+2025-09-23 13:00:48,092 [INFO]     Check interval: 5 minutes
+2025-09-23 13:00:48,092 [INFO]     ATR Multiplier: 2.5
+2025-09-23 13:00:48,093 [INFO]     RSI Range: 20-80
+2025-09-23 13:00:48,093 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-23 13:00:48,093 [INFO]     Signal Strength Threshold: 65
+2025-09-23 13:00:48,093 [INFO]  Initializing advanced stock analysis...
+2025-09-23 13:03:30,210 [INFO] Signal handlers set up successfully
+2025-09-23 13:03:30,211 [INFO] SIGTERM handler registered
+2025-09-23 13:03:30,212 [INFO] SIGINT handler registered
+2025-09-23 13:03:30,212 [INFO] === STARTUP DIAGNOSTICS ===
+2025-09-23 13:03:30,213 [INFO] Process ID: 19540
+2025-09-23 13:03:30,213 [INFO] Parent PID: 14680
+2025-09-23 13:03:30,213 [INFO] User: unknown
+2025-09-23 13:03:30,214 [INFO] Working Directory: C:\Users\ShivaVineeth\OneDrive - PROWESS SOFTWARE SERVICES PRIVATE LIMITED\Desktop\Python Git
+2025-09-23 13:03:30,214 [INFO] In Container: False
+2025-09-23 13:03:30,215 [INFO] Start Time: 2025-09-23 13:03:30.211715
+2025-09-23 13:03:30,215 [INFO] Parent Process: powershell.exe - C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -noexit -command
+2025-09-23 13:03:30,216 [INFO] === END STARTUP DIAGNOSTICS ===
+2025-09-23 13:03:30,216 [INFO] Enhanced shutdown diagnostics initialized
+2025-09-23 13:03:30,216 [INFO] All required libraries verified
+2025-09-23 13:03:30,217 [INFO]  Advanced Trading Bot Configuration:
+2025-09-23 13:03:30,218 [INFO]     Monitoring 184 stocks
+2025-09-23 13:03:30,219 [INFO]     Check interval: 5 minutes
+2025-09-23 13:03:30,219 [INFO]     ATR Multiplier: 2.5
+2025-09-23 13:03:30,220 [INFO]     RSI Range: 20-80
+2025-09-23 13:03:30,221 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-23 13:03:30,222 [INFO]     Signal Strength Threshold: 65
+2025-09-23 13:03:30,223 [INFO]  Initializing advanced stock analysis...
+2025-09-23 13:04:58,898 [INFO] [IMPROVED BUY] RELIANCE @ Rs.1386.10 | Strength: 75.0
+2025-09-23 13:05:05,958 [INFO] [IMPROVED BUY] INFY @ Rs.1504.30 | Strength: 75.0
+2025-09-23 13:05:24,796 [INFO] [IMPROVED BUY] WIPRO @ Rs.250.76 | Strength: 65.0
+2025-09-23 13:06:12,279 [INFO] [IMPROVED BUY] TATAMOTORS @ Rs.701.90 | Strength: 70.0
+2025-09-23 13:06:16,780 [INFO] [IMPROVED BUY] COALINDIA @ Rs.394.75 | Strength: 80.0
+2025-09-23 13:06:28,457 [INFO] [IMPROVED BUY] GRASIM @ Rs.2830.00 | Strength: 65.0
+2025-09-23 13:06:33,063 [INFO] [IMPROVED BUY] DRREDDY @ Rs.1307.90 | Strength: 80.0
+2025-09-23 13:06:52,313 [INFO] [IMPROVED BUY] BAJAJ-AUTO @ Rs.9043.00 | Strength: 70.0
+2025-09-23 13:07:09,540 [INFO] [IMPROVED BUY] HDFCLIFE @ Rs.776.10 | Strength: 80.0
+2025-09-23 13:08:47,492 [INFO] Signal handlers set up successfully
+2025-09-23 13:08:47,493 [INFO] SIGTERM handler registered
+2025-09-23 13:08:47,494 [INFO] SIGINT handler registered
+2025-09-23 13:08:47,495 [INFO] === STARTUP DIAGNOSTICS ===
+2025-09-23 13:08:47,496 [INFO] Process ID: 27616
+2025-09-23 13:08:47,497 [INFO] Parent PID: 17804
+2025-09-23 13:08:47,497 [INFO] User: unknown
+2025-09-23 13:08:47,498 [INFO] Working Directory: C:\Users\ShivaVineeth\OneDrive - PROWESS SOFTWARE SERVICES PRIVATE LIMITED\Desktop\Python Git
+2025-09-23 13:08:47,498 [INFO] In Container: False
+2025-09-23 13:08:47,499 [INFO] Start Time: 2025-09-23 13:08:47.493808
+2025-09-23 13:08:47,500 [INFO] Parent Process: powershell.exe - C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -noexit -command
+2025-09-23 13:08:47,500 [INFO] === END STARTUP DIAGNOSTICS ===
+2025-09-23 13:08:47,501 [INFO] Enhanced shutdown diagnostics initialized
+2025-09-23 13:08:47,502 [INFO] All required libraries verified
+2025-09-23 13:08:47,503 [INFO]  Advanced Trading Bot Configuration:
+2025-09-23 13:08:47,503 [INFO]     Monitoring 63 stocks
+2025-09-23 13:08:47,504 [INFO]     Check interval: 5 minutes
+2025-09-23 13:08:47,504 [INFO]     ATR Multiplier: 2.5
+2025-09-23 13:08:47,504 [INFO]     RSI Range: 20-80
+2025-09-23 13:08:47,505 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-23 13:08:47,505 [INFO]     Signal Strength Threshold: 65
+2025-09-23 13:08:47,505 [INFO]  Initializing advanced stock analysis...
+2025-09-23 13:09:27,397 [INFO] [IMPROVED BUY] COALINDIA @ Rs.394.60 | Strength: 80.0
+2025-09-23 13:09:31,794 [INFO] [IMPROVED BUY] DRREDDY @ Rs.1307.50 | Strength: 80.0
+2025-09-23 13:10:14,040 [INFO] [IMPROVED BUY] SRESTHA @ Rs.0.41 | Strength: 75.0
+2025-09-23 13:10:37,524 [INFO] [IMPROVED BUY] ARIHANTCAP @ Rs.109.99 | Strength: 70.0
+2025-09-23 13:10:46,858 [INFO] [IMPROVED BUY] CENTEXT @ Rs.25.80 | Strength: 70.0
+2025-09-23 13:11:06,027 [INFO] [IMPROVED BUY] ELECON @ Rs.602.95 | Strength: 80.0
+2025-09-23 13:11:12,953 [INFO] [IMPROVED BUY] RITES @ Rs.262.58 | Strength: 80.0
+2025-09-23 13:11:19,882 [INFO] [IMPROVED BUY] NEULANDLAB @ Rs.15103.00 | Strength: 70.0
+2025-09-23 13:11:31,503 [INFO] [IMPROVED BUY] ARE&M @ Rs.1020.60 | Strength: 70.0
+2025-09-23 13:11:36,000 [INFO] [IMPROVED BUY] BTML @ Rs.9.20 | Strength: 70.0
+2025-09-23 13:11:52,553 [INFO] [IMPROVED BUY] INFY @ Rs.1503.40 | Strength: 75.0
+2025-09-23 13:11:59,408 [INFO] [IMPROVED BUY] KSOLVES @ Rs.323.10 | Strength: 65.0
+2025-09-23 13:12:04,020 [INFO] [IMPROVED BUY] LAURUSLABS @ Rs.906.45 | Strength: 80.0
+2025-09-23 13:12:13,235 [INFO] [IMPROVED BUY] RBLBANK @ Rs.271.55 | Strength: 70.0
+2025-09-23 13:12:17,770 [INFO] [IMPROVED BUY] TATAMOTORS @ Rs.701.65 | Strength: 70.0
+2025-09-23 13:18:37,233 [INFO] [IMPROVED BUY] IDBI @ Rs.93.22 | Strength: 75.0
+2025-09-23 13:18:53,757 [INFO] [IMPROVED BUY] JAMNAAUTO @ Rs.107.55 | Strength: 70.0
+2025-09-23 13:37:26,645 [INFO] Signal handlers set up successfully
+2025-09-23 13:37:26,646 [INFO] SIGTERM handler registered
+2025-09-23 13:37:26,647 [INFO] SIGINT handler registered
+2025-09-23 13:37:26,647 [INFO] === STARTUP DIAGNOSTICS ===
+2025-09-23 13:37:26,647 [INFO] Process ID: 35944
+2025-09-23 13:37:26,648 [INFO] Parent PID: 38080
+2025-09-23 13:37:26,648 [INFO] User: unknown
+2025-09-23 13:37:26,649 [INFO] Working Directory: C:\Users\ShivaVineeth\OneDrive - PROWESS SOFTWARE SERVICES PRIVATE LIMITED\Desktop\Python Git
+2025-09-23 13:37:26,649 [INFO] In Container: False
+2025-09-23 13:37:26,649 [INFO] Start Time: 2025-09-23 13:37:26.646631
+2025-09-23 13:37:26,649 [INFO] Parent Process: powershell.exe - C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -noexit -command
+2025-09-23 13:37:26,650 [INFO] === END STARTUP DIAGNOSTICS ===
+2025-09-23 13:37:26,650 [INFO] Enhanced shutdown diagnostics initialized
+2025-09-23 13:37:26,650 [INFO] All required libraries verified
+2025-09-23 13:37:26,651 [INFO]  Advanced Trading Bot Configuration:
+2025-09-23 13:37:26,651 [INFO]     Monitoring 36 stocks
+2025-09-23 13:37:26,652 [INFO]     Check interval: 5 minutes
+2025-09-23 13:37:26,652 [INFO]     ATR Multiplier: 2.5
+2025-09-23 13:37:26,653 [INFO]     RSI Range: 20-80
+2025-09-23 13:37:26,653 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-23 13:37:26,653 [INFO]     Signal Strength Threshold: 65
+2025-09-23 13:37:26,654 [INFO]  Initializing advanced stock analysis...
+2025-09-23 13:37:43,429 [INFO] [IMPROVED BUY] INFY @ Rs.1505.50 | Strength: 75.0
+2025-09-23 13:37:50,350 [INFO] [IMPROVED BUY] TATAMOTORS @ Rs.701.05 | Strength: 70.0
+2025-09-23 13:38:09,025 [INFO] [IMPROVED BUY] RBLBANK @ Rs.271.80 | Strength: 70.0
+2025-09-23 13:38:18,026 [INFO] [IMPROVED BUY] COALINDIA @ Rs.393.60 | Strength: 80.0
+2025-09-23 13:38:32,124 [INFO] [IMPROVED BUY] LAURUSLABS @ Rs.905.70 | Strength: 80.0
+2025-09-23 13:38:36,566 [INFO] [IMPROVED BUY] NEULANDLAB @ Rs.15070.00 | Strength: 70.0
+2025-09-23 13:38:55,190 [INFO] [IMPROVED BUY] RITES @ Rs.262.47 | Strength: 80.0
+2025-09-23 13:39:01,852 [INFO] [IMPROVED BUY] KSOLVES @ Rs.321.05 | Strength: 65.0
+2025-09-23 13:39:13,541 [INFO] [IMPROVED BUY] CENTEXT @ Rs.25.89 | Strength: 80.0
