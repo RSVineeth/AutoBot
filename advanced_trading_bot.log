@@ -354,3 +354,76 @@
 2025-09-23 13:38:55,190 [INFO] [IMPROVED BUY] RITES @ Rs.262.47 | Strength: 80.0
 2025-09-23 13:39:01,852 [INFO] [IMPROVED BUY] KSOLVES @ Rs.321.05 | Strength: 65.0
 2025-09-23 13:39:13,541 [INFO] [IMPROVED BUY] CENTEXT @ Rs.25.89 | Strength: 80.0
+2025-09-25 10:45:37,600 [INFO] Signal handlers set up successfully
+2025-09-25 10:45:37,601 [INFO] SIGTERM handler registered
+2025-09-25 10:45:37,602 [INFO] SIGINT handler registered
+2025-09-25 10:45:37,602 [INFO] === STARTUP DIAGNOSTICS ===
+2025-09-25 10:45:37,603 [INFO] Process ID: 29556
+2025-09-25 10:45:37,603 [INFO] Parent PID: 25672
+2025-09-25 10:45:37,604 [INFO] User: unknown
+2025-09-25 10:45:37,604 [INFO] Working Directory: C:\Users\ShivaVineeth\OneDrive - PROWESS SOFTWARE SERVICES PRIVATE LIMITED\Desktop\Python Git
+2025-09-25 10:45:37,605 [INFO] In Container: False
+2025-09-25 10:45:37,605 [INFO] Start Time: 2025-09-25 10:45:37.601595
+2025-09-25 10:45:37,606 [INFO] Parent Process: powershell.exe - C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -noexit -command
+2025-09-25 10:45:37,606 [INFO] === END STARTUP DIAGNOSTICS ===
+2025-09-25 10:45:37,606 [INFO] Enhanced shutdown diagnostics initialized
+2025-09-25 10:45:37,607 [INFO] All required libraries verified
+2025-09-25 10:45:37,607 [INFO]  Advanced Trading Bot Configuration:
+2025-09-25 10:45:37,608 [INFO]     Monitoring 36 stocks
+2025-09-25 10:45:37,609 [INFO]     Check interval: 5 minutes
+2025-09-25 10:45:37,609 [INFO]     ATR Multiplier: 2.5
+2025-09-25 10:45:37,610 [INFO]     RSI Range: 20-80
+2025-09-25 10:45:37,611 [INFO]     Volume Spike Threshold: 1.8x
+2025-09-25 10:45:37,611 [INFO]     Signal Strength Threshold: 65
+2025-09-25 10:45:37,612 [INFO]  Initializing advanced stock analysis...
+2025-09-25 10:45:50,308 [INFO] 🤖 Advanced Stock Trading Bot v2.0 with Staged Loading Started! 🚀
+2025-09-25 10:45:52,049 [INFO] 
+[10:45:52] Staged Analysis Cycle #1
+2025-09-25 10:45:52,051 [INFO] Memory status: Process=107.6MB, Cache=0.0MB
+2025-09-25 10:45:52,053 [INFO] Fetching fresh data for INFY.NS
+2025-09-25 10:45:53,215 [INFO] Fetching fresh data for ITC.NS
+2025-09-25 10:45:54,469 [INFO] Fetching fresh data for TATAMOTORS.NS
+2025-09-25 10:45:55,708 [INFO] Fetching fresh data for DABUR.NS
+2025-09-25 10:45:56,936 [INFO] Fetching fresh data for ACC.NS
+2025-09-25 10:45:58,584 [INFO] [IMPROVED BUY] ACC @ Rs.1864.10 | Strength: 80.0
+2025-09-25 10:45:59,590 [INFO] Fetching fresh data for TATACONSUM.NS
+2025-09-25 10:46:00,838 [INFO] Fetching fresh data for BAJFINANCE.NS
+2025-09-25 10:46:02,070 [INFO] Fetching fresh data for MUTHOOTFIN.NS
+2025-09-25 10:46:03,310 [INFO] Fetching fresh data for IDFCFIRSTB.NS
+2025-09-25 10:46:04,531 [INFO] Fetching fresh data for RBLBANK.NS
+2025-09-25 10:46:08,208 [INFO] [IMPROVED BUY] RBLBANK @ Rs.271.80 | Strength: 70.0
+2025-09-25 10:46:09,219 [INFO] Fetching fresh data for AUBANK.NS
+2025-09-25 10:46:10,455 [INFO] Fetching fresh data for ADANIPORTS.NS
+2025-09-25 10:46:11,696 [INFO] Fetching fresh data for COALINDIA.NS
+2025-09-25 10:46:17,519 [INFO] [IMPROVED BUY] COALINDIA @ Rs.393.70 | Strength: 70.0
+2025-09-25 10:46:18,529 [INFO] Fetching fresh data for BPCL.NS
+2025-09-25 10:46:19,815 [INFO] Fetching fresh data for TATAPOWER.NS
+2025-09-25 10:46:21,931 [INFO] [IMPROVED BUY] TATAPOWER @ Rs.389.20 | Strength: 75.0
+2025-09-25 10:46:22,942 [INFO] Fetching fresh data for RVNL.NS
+2025-09-25 10:46:24,795 [INFO] [IMPROVED BUY] RVNL @ Rs.352.40 | Strength: 75.0
+2025-09-25 10:46:25,807 [INFO] Fetching fresh data for BEL.NS
+2025-09-25 10:46:27,046 [INFO] Fetching fresh data for LAURUSLABS.NS
+2025-09-25 10:46:28,277 [INFO] Fetching fresh data for NEULANDLAB.NS
+2025-09-25 10:46:30,082 [INFO] [IMPROVED BUY] NEULANDLAB @ Rs.14991.00 | Strength: 70.0
+2025-09-25 10:46:31,100 [INFO] Fetching fresh data for VEDL.NS
+2025-09-25 10:46:32,345 [INFO] Fetching fresh data for SAIL.NS
+2025-09-25 10:46:33,590 [INFO] Fetching fresh data for NMDC.NS
+2025-09-25 10:46:34,834 [INFO] Fetching fresh data for NATIONALUM.NS
+2025-09-25 10:46:37,114 [INFO] [IMPROVED BUY] NATIONALUM @ Rs.209.18 | Strength: 70.0
+2025-09-25 10:46:38,129 [INFO] Fetching fresh data for COCHINSHIP.NS
+2025-09-25 10:46:39,362 [INFO] Fetching fresh data for GRSE.NS
+2025-09-25 10:46:40,584 [INFO] Fetching fresh data for RITES.NS
+2025-09-25 10:46:41,809 [INFO] Fetching fresh data for AFFLE.NS
+2025-09-25 10:46:43,738 [INFO] [IMPROVED BUY] AFFLE @ Rs.2053.00 | Strength: 70.0
+2025-09-25 10:46:44,751 [INFO] Fetching fresh data for KSOLVES.NS
+2025-09-25 10:46:45,975 [INFO] Fetching fresh data for NYKAA.NS
+2025-09-25 10:46:47,190 [INFO] Fetching fresh data for GSFC.NS
+2025-09-25 10:46:48,425 [INFO] Fetching fresh data for GPIL.NS
+2025-09-25 10:46:49,696 [INFO] Fetching fresh data for CENTEXT.NS
+2025-09-25 10:46:53,980 [INFO] [IMPROVED BUY] CENTEXT @ Rs.25.01 | Strength: 70.0
+2025-09-25 10:46:54,997 [INFO] Fetching fresh data for OLECTRA.NS
+2025-09-25 10:46:56,679 [INFO] [IMPROVED BUY] OLECTRA @ Rs.1617.50 | Strength: 70.0
+2025-09-25 10:46:57,698 [INFO] Fetching fresh data for BDL.NS
+2025-09-25 10:46:58,905 [INFO] Fetching fresh data for MANAPPURAM.NS
+2025-09-25 10:47:00,137 [INFO] Fetching fresh data for INDRAMEDCO.NS
+2025-09-25 10:47:09,206 [INFO] [10:45:52] Staged cycle complete. Next analysis in 5 minutes...

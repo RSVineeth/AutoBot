@@ -52,20 +52,20 @@ logger = logging.getLogger(__name__)
 # ============================
 
 # Telegram Configuration
-TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
-TELEGRAM_CHAT_ID = ['1012793457','1209666577']
+# TELEGRAM_BOT_TOKEN = '7933607173:AAFND1Z_GxNdvKwOc4Y_LUuX327eEpc2KIE'
+# TELEGRAM_CHAT_ID = ['1012793457','1209666577']
 
-# Trading Configuration
-TICKERS = [
-"INFY.NS","ITC.NS","TATAMOTORS.NS","DABUR.NS","ACC.NS","TATACONSUM.NS",
-"BAJFINANCE.NS","MUTHOOTFIN.NS","IDFCFIRSTB.NS","RBLBANK.NS","AUBANK.NS",
-"ADANIPORTS.NS","COALINDIA.NS","BPCL.NS","TATAPOWER.NS","RVNL.NS","BEL.NS","LAURUSLABS.NS","NEULANDLAB.NS",
-"VEDL.NS","SAIL.NS","NMDC.NS","NATIONALUM.NS",
-"COCHINSHIP.NS","GRSE.NS","RITES.NS",
-"AFFLE.NS","KSOLVES.NS","NYKAA.NS",
-"GSFC.NS","GPIL.NS","CENTEXT.NS",
-"OLECTRA.NS","BDL.NS","MANAPPURAM.NS","INDRAMEDCO.NS"
-]
+# # Trading Configuration
+# TICKERS = [
+# "INFY.NS","ITC.NS","TATAMOTORS.NS","DABUR.NS","ACC.NS","TATACONSUM.NS",
+# "BAJFINANCE.NS","MUTHOOTFIN.NS","IDFCFIRSTB.NS","RBLBANK.NS","AUBANK.NS",
+# "ADANIPORTS.NS","COALINDIA.NS","BPCL.NS","TATAPOWER.NS","RVNL.NS","BEL.NS","LAURUSLABS.NS","NEULANDLAB.NS",
+# "VEDL.NS","SAIL.NS","NMDC.NS","NATIONALUM.NS",
+# "COCHINSHIP.NS","GRSE.NS","RITES.NS",
+# "AFFLE.NS","KSOLVES.NS","NYKAA.NS",
+# "GSFC.NS","GPIL.NS","CENTEXT.NS",
+# "OLECTRA.NS","BDL.NS","MANAPPURAM.NS","INDRAMEDCO.NS"
+# ]
 # [
 # "BAJFINANCE.NS","BAJAJFINSV.NS","ADANIPORTS.NS","COALINDIA.NS","DRREDDY.NS","BPCL.NS","VEDL.NS","SAIL.NS","NMDC.NS","MOIL.NS",
 # "TATACONSUM.NS","MUTHOOTFIN.NS","MANAPPURAM.NS","LICHSGFIN.NS","UNIONBANK.NS","AUBANK.NS","IDBI.NS","IDEA.NS","RPOWER.NS","TATAPOWER.NS",
@@ -673,31 +673,166 @@ class InMemoryStockMemory:
         
 #         return indicators
 
+# class OptimizedDataCache:
+#     def __init__(self):
+#         self.historical_cache = {}
+#         self.cache_timestamps = {}
+#         self.indicators_cache = {}
+#         self.CACHE_EXPIRE_HOURS = 2
+#         self.MAX_CACHE_SIZE_MB = 80  # Conservative limit for 512MB instance
+        
+#     def get_cache_size_mb(self) -> float:
+#         """Calculate current cache size in MB - CRITICAL METHOD"""
+#         try:
+#             import sys
+#             total_size = 0
+            
+#             # Calculate historical cache size
+#             for key, df in self.historical_cache.items():
+#                 if df is not None:
+#                     total_size += df.memory_usage(deep=True).sum()
+            
+#             # Calculate indicators cache size  
+#             for key, indicators in self.indicators_cache.items():
+#                 if indicators:
+#                     total_size += sys.getsizeof(indicators)
+#                     for k, v in indicators.items():
+#                         if hasattr(v, 'nbytes'):  # numpy array
+#                             total_size += v.nbytes
+#                         else:
+#                             total_size += sys.getsizeof(v)
+            
+#             return total_size / (1024 * 1024)
+#         except Exception as e:
+#             logger.warning(f"Error calculating cache size: {e}")
+#             return 0.0
+
+#     def cleanup_old_cache_entries(self):
+#         """Remove expired cache entries - CRITICAL METHOD"""
+#         try:
+#             now = datetime.now()
+#             cutoff = now - timedelta(hours=self.CACHE_EXPIRE_HOURS)
+            
+#             expired_keys = [key for key, timestamp in self.cache_timestamps.items() 
+#                           if timestamp < cutoff]
+            
+#             cleaned_count = 0
+#             for key in expired_keys:
+#                 if key in self.historical_cache:
+#                     del self.historical_cache[key]
+#                     cleaned_count += 1
+#                 if key in self.indicators_cache:
+#                     del self.indicators_cache[key]
+#                     cleaned_count += 1
+#                 if key in self.cache_timestamps:
+#                     del self.cache_timestamps[key]
+            
+#             if cleaned_count > 0:
+#                 logger.info(f"Cache cleanup: Removed {cleaned_count} expired entries")
+                
+#         except Exception as e:
+#             logger.error(f"Error in cache cleanup: {e}")
+    
+#     def force_cleanup_if_needed(self):
+#         """Force cleanup if cache exceeds limit - CRITICAL METHOD"""
+#         current_size = self.get_cache_size_mb()
+#         if current_size > self.MAX_CACHE_SIZE_MB:
+#             logger.warning(f"Cache size {current_size:.1f}MB exceeds limit - forcing cleanup")
+            
+#             if self.cache_timestamps:
+#                 sorted_entries = sorted(self.cache_timestamps.items(), key=lambda x: x[1])
+#                 entries_to_remove = len(sorted_entries) // 2  # Remove oldest 50%
+                
+#                 for key, _ in sorted_entries[:entries_to_remove]:
+#                     if key in self.historical_cache:
+#                         del self.historical_cache[key]
+#                     if key in self.indicators_cache:
+#                         del self.indicators_cache[key]
+#                     if key in self.cache_timestamps:
+#                         del self.cache_timestamps[key]
+                
+#                 new_size = self.get_cache_size_mb()
+#                 logger.info(f"Forced cleanup: Size reduced from {current_size:.1f}MB to {new_size:.1f}MB")
+
+#     def get_cached_historical(self, ticker: str, period: str = "6mo") -> Optional[pd.DataFrame]:
+#         """Get cached historical data with memory management"""
+#         now = datetime.now()
+#         cache_key = f"{ticker}_{period}"
+        
+#         # Check cache first
+#         if (cache_key in self.historical_cache and 
+#             cache_key in self.cache_timestamps and
+#             (now - self.cache_timestamps[cache_key]).total_seconds() < self.CACHE_EXPIRE_HOURS * 3600):
+#             logger.debug(f"Using cached data for {ticker}")
+#             return self.historical_cache[cache_key]
+        
+#         # Force cleanup before fetching new data
+#         self.force_cleanup_if_needed()
+        
+#         # Fetch fresh data
+#         logger.info(f"Fetching fresh data for {ticker}")
+#         df = get_stock_data(ticker, period)
+#         if df is not None:
+#             self.historical_cache[cache_key] = df
+#             self.cache_timestamps[cache_key] = now
+        
+#         return df
+    
+#     def get_cached_indicators(self, ticker: str, df: pd.DataFrame) -> Dict:
+#         """Get cached indicators with compression - CRITICAL FIX"""
+#         now = datetime.now()
+#         cache_key = f"{ticker}_indicators"
+        
+#         # Check cache
+#         if (cache_key in self.indicators_cache and 
+#             cache_key in self.cache_timestamps and
+#             (now - self.cache_timestamps[cache_key]).total_seconds() < self.CACHE_EXPIRE_HOURS * 3600):
+#             logger.debug(f"Using cached indicators for {ticker}")
+#             return self.indicators_cache[cache_key]
+        
+#         # Calculate fresh indicators
+#         logger.debug(f"Calculating indicators for {ticker}")
+#         indicators = calculate_advanced_indicators(df)
+#         if indicators:
+#             # CRITICAL: Compress indicators to single values
+#             compressed_indicators = {}
+#             for key, value in indicators.items():
+#                 if value is not None:
+#                     latest_value = safe_extract(value)
+#                     if latest_value is not None:
+#                         compressed_indicators[key] = latest_value
+            
+#             self.indicators_cache[cache_key] = compressed_indicators
+#             self.cache_timestamps[cache_key] = now
+            
+#             logger.debug(f"Cached compressed indicators for {ticker}: {len(compressed_indicators)} values")
+        
+#         return indicators  # Return full for immediate use, but cache compressed
+
+
 class OptimizedDataCache:
     def __init__(self):
         self.historical_cache = {}
         self.cache_timestamps = {}
         self.indicators_cache = {}
         self.CACHE_EXPIRE_HOURS = 2
-        self.MAX_CACHE_SIZE_MB = 80  # Conservative limit for 512MB instance
-        
+        self.MAX_CACHE_SIZE_MB = 80
+
     def get_cache_size_mb(self) -> float:
-        """Calculate current cache size in MB - CRITICAL METHOD"""
+        """Calculate current cache size in MB"""
         try:
             import sys
             total_size = 0
             
-            # Calculate historical cache size
             for key, df in self.historical_cache.items():
                 if df is not None:
                     total_size += df.memory_usage(deep=True).sum()
             
-            # Calculate indicators cache size  
             for key, indicators in self.indicators_cache.items():
                 if indicators:
                     total_size += sys.getsizeof(indicators)
                     for k, v in indicators.items():
-                        if hasattr(v, 'nbytes'):  # numpy array
+                        if hasattr(v, 'nbytes'):
                             total_size += v.nbytes
                         else:
                             total_size += sys.getsizeof(v)
@@ -708,7 +843,7 @@ class OptimizedDataCache:
             return 0.0
 
     def cleanup_old_cache_entries(self):
-        """Remove expired cache entries - CRITICAL METHOD"""
+        """Remove expired cache entries"""
         try:
             now = datetime.now()
             cutoff = now - timedelta(hours=self.CACHE_EXPIRE_HOURS)
@@ -734,14 +869,14 @@ class OptimizedDataCache:
             logger.error(f"Error in cache cleanup: {e}")
     
     def force_cleanup_if_needed(self):
-        """Force cleanup if cache exceeds limit - CRITICAL METHOD"""
+        """Force cleanup if cache exceeds limit"""
         current_size = self.get_cache_size_mb()
         if current_size > self.MAX_CACHE_SIZE_MB:
             logger.warning(f"Cache size {current_size:.1f}MB exceeds limit - forcing cleanup")
             
             if self.cache_timestamps:
                 sorted_entries = sorted(self.cache_timestamps.items(), key=lambda x: x[1])
-                entries_to_remove = len(sorted_entries) // 2  # Remove oldest 50%
+                entries_to_remove = len(sorted_entries) // 2
                 
                 for key, _ in sorted_entries[:entries_to_remove]:
                     if key in self.historical_cache:
@@ -759,17 +894,14 @@ class OptimizedDataCache:
         now = datetime.now()
         cache_key = f"{ticker}_{period}"
         
-        # Check cache first
         if (cache_key in self.historical_cache and 
             cache_key in self.cache_timestamps and
             (now - self.cache_timestamps[cache_key]).total_seconds() < self.CACHE_EXPIRE_HOURS * 3600):
             logger.debug(f"Using cached data for {ticker}")
             return self.historical_cache[cache_key]
         
-        # Force cleanup before fetching new data
         self.force_cleanup_if_needed()
         
-        # Fetch fresh data
         logger.info(f"Fetching fresh data for {ticker}")
         df = get_stock_data(ticker, period)
         if df is not None:
@@ -779,36 +911,44 @@ class OptimizedDataCache:
         return df
     
     def get_cached_indicators(self, ticker: str, df: pd.DataFrame) -> Dict:
-        """Get cached indicators with compression - CRITICAL FIX"""
+        """Get cached indicators - FIXED VERSION"""
         now = datetime.now()
         cache_key = f"{ticker}_indicators"
         
-        # Check cache
+        # Check cache first
         if (cache_key in self.indicators_cache and 
             cache_key in self.cache_timestamps and
             (now - self.cache_timestamps[cache_key]).total_seconds() < self.CACHE_EXPIRE_HOURS * 3600):
             logger.debug(f"Using cached indicators for {ticker}")
-            return self.indicators_cache[cache_key]
+            return self.indicators_cache[cache_key]  # Return cached compressed indicators
         
         # Calculate fresh indicators
         logger.debug(f"Calculating indicators for {ticker}")
-        indicators = calculate_advanced_indicators(df)
-        if indicators:
-            # CRITICAL: Compress indicators to single values
+        raw_indicators = calculate_advanced_indicators(df)
+        
+        if raw_indicators:
+            # Compress indicators to single values
             compressed_indicators = {}
-            for key, value in indicators.items():
+            for key, value in raw_indicators.items():
                 if value is not None:
-                    latest_value = safe_extract(value)
-                    if latest_value is not None:
-                        compressed_indicators[key] = latest_value
+                    try:
+                        latest_value = safe_extract(value)
+                        if latest_value is not None:
+                            compressed_indicators[key] = latest_value
+                    except Exception as e:
+                        logger.debug(f"Error extracting {key} for {ticker}: {e}")
+                        continue
             
+            # Cache compressed version
             self.indicators_cache[cache_key] = compressed_indicators
             self.cache_timestamps[cache_key] = now
             
-            logger.debug(f"Cached compressed indicators for {ticker}: {len(compressed_indicators)} values")
+            logger.debug(f"Cached {len(compressed_indicators)} compressed indicators for {ticker}")
+            
+            # ✅ CRITICAL FIX: Return compressed indicators, not raw arrays
+            return compressed_indicators
         
-        return indicators  # Return full for immediate use, but cache compressed
-
+        return {}
 
 memory = InMemoryStockMemory()
 data_cache = OptimizedDataCache()  # Add this line
@@ -1228,16 +1368,129 @@ def calculate_advanced_indicators(df: pd.DataFrame) -> Dict:
 #         print(f"Traceback: {traceback.format_exc()}")
 #         return 0.0
 
+# def calculate_signal_strength(ticker: str, indicators: Dict, current_price: float) -> float:
+#     """Calculate signal strength using cached single values"""
+#     try:
+#         if not indicators:
+#             return 0.0
+        
+#         strength_components = []
+        
+#         # All indicators are now single values from cache
+#         sma_20 = indicators.get('sma_20')  # No need for safe_extract
+#         sma_50 = indicators.get('sma_50') 
+#         ema_12 = indicators.get('ema_12')
+#         ema_26 = indicators.get('ema_26')
+#         rsi = indicators.get('rsi_14')
+#         macd = indicators.get('macd')
+#         macd_signal = indicators.get('macd_signal')
+        
+#         # Trend strength (30% weight)
+#         if all([sma_20, sma_50, ema_12, ema_26]):
+#             trend_score = 0
+#             if current_price > sma_20 > sma_50:
+#                 trend_score += 25
+#             if ema_12 > ema_26:
+#                 trend_score += 15
+#             if current_price > sma_20:
+#                 trend_score += 10
+#             strength_components.append(min(trend_score, 30))
+        
+#         # Momentum strength (25% weight)
+#         if rsi and macd and macd_signal:
+#             momentum_score = 0
+#             if 30 < rsi < 70:
+#                 momentum_score += 15
+#             if macd > macd_signal and macd > 0:
+#                 momentum_score += 10
+#             strength_components.append(min(momentum_score, 25))
+        
+#         # # Volume strength (20% weight)
+#         # volume_sma = indicators.get('volume_sma_10')
+#         # if volume_sma and ticker in memory.volume_history and len(memory.volume_history[ticker]) > 0:
+#         #     current_volume = memory.volume_history[ticker][-1]
+#         #     volume_score = 0
+#         #     if current_volume > volume_sma * MIN_VOLUME_SPIKE:
+#         #         volume_score += 20
+#         #     elif current_volume > volume_sma * 1.2:
+#         #         volume_score += 10
+#         #     strength_components.append(min(volume_score, 20))
+        
+#                 # Volume strength (20% weight) - FIXED SECTION
+#         volume_sma = indicators.get('volume_sma_10')
+#         if volume_sma is not None and ticker in memory.volume_history:
+#             try:
+#                 volume_history = memory.volume_history[ticker]
+#                 current_volume = None
+                
+#                 # Safe extraction of current volume
+#                 if hasattr(volume_history, '__len__') and len(volume_history) > 0:
+#                     # It's a collection (list, deque, array)
+#                     try:
+#                         current_volume = float(volume_history[-1])
+#                     except (IndexError, TypeError, ValueError):
+#                         current_volume = None
+#                 elif volume_history is not None:
+#                     # It's a scalar
+#                     try:
+#                         current_volume = float(volume_history)
+#                     except (TypeError, ValueError):
+#                         current_volume = None
+                
+#                 if current_volume is not None and current_volume > 0 and volume_sma > 0:
+#                     volume_score = 0
+#                     volume_ratio = current_volume / volume_sma
+                    
+#                     if volume_ratio > MIN_VOLUME_SPIKE:
+#                         volume_score += 20
+#                     elif volume_ratio > 1.2:
+#                         volume_score += 10
+                    
+#                     strength_components.append(min(volume_score, 20))
+                    
+#             except Exception as e:
+#                 logger.debug(f"Volume analysis error for {ticker}: {e}")
+#                 # Skip volume component if error occurs
+#                 pass
+
+#         # Volatility check (15% weight)
+#         atr = indicators.get('atr_14')
+#         volatility_ratio = indicators.get('volatility_ratio', 1.0)
+#         if atr and volatility_ratio:
+#             volatility_score = 0
+#             if volatility_ratio < 1.5:
+#                 volatility_score += 15
+#             elif volatility_ratio < 2.0:
+#                 volatility_score += 10
+#             strength_components.append(min(volatility_score, 15))
+        
+#         # Support/Resistance (10% weight)
+#         bb_lower = indicators.get('bb_lower')
+#         bb_upper = indicators.get('bb_upper')
+#         if bb_lower and bb_upper:
+#             sr_score = 0
+#             if current_price > bb_lower and current_price < bb_upper:
+#                 sr_score += 5
+#             if current_price > bb_lower * 1.02:
+#                 sr_score += 5
+#             strength_components.append(min(sr_score, 10))
+        
+#         return min(sum(strength_components), 100.0)
+        
+#     except Exception as e:
+#         logger.error(f"Error calculating cached signal strength for {ticker}: {e}")
+#         return 0.0
+
 def calculate_signal_strength(ticker: str, indicators: Dict, current_price: float) -> float:
-    """Calculate signal strength using cached single values"""
+    """Calculate signal strength using compressed single values - FINAL VERSION"""
     try:
         if not indicators:
             return 0.0
         
         strength_components = []
         
-        # All indicators are now single values from cache
-        sma_20 = indicators.get('sma_20')  # No need for safe_extract
+        # All indicators are now guaranteed to be single values from cache
+        sma_20 = indicators.get('sma_20')
         sma_50 = indicators.get('sma_50') 
         ema_12 = indicators.get('ema_12')
         ema_26 = indicators.get('ema_26')
@@ -1246,7 +1499,7 @@ def calculate_signal_strength(ticker: str, indicators: Dict, current_price: floa
         macd_signal = indicators.get('macd_signal')
         
         # Trend strength (30% weight)
-        if all([sma_20, sma_50, ema_12, ema_26]):
+        if all(x is not None for x in [sma_20, sma_50, ema_12, ema_26]):
             trend_score = 0
             if current_price > sma_20 > sma_50:
                 trend_score += 25
@@ -1257,7 +1510,7 @@ def calculate_signal_strength(ticker: str, indicators: Dict, current_price: floa
             strength_components.append(min(trend_score, 30))
         
         # Momentum strength (25% weight)
-        if rsi and macd and macd_signal:
+        if all(x is not None for x in [rsi, macd, macd_signal]):
             momentum_score = 0
             if 30 < rsi < 70:
                 momentum_score += 15
@@ -1265,21 +1518,43 @@ def calculate_signal_strength(ticker: str, indicators: Dict, current_price: floa
                 momentum_score += 10
             strength_components.append(min(momentum_score, 25))
         
-        # Volume strength (20% weight)
+        # Volume strength (20% weight) - SAFE VERSION
         volume_sma = indicators.get('volume_sma_10')
-        if volume_sma and ticker in memory.volume_history and len(memory.volume_history[ticker]) > 0:
-            current_volume = memory.volume_history[ticker][-1]
-            volume_score = 0
-            if current_volume > volume_sma * MIN_VOLUME_SPIKE:
-                volume_score += 20
-            elif current_volume > volume_sma * 1.2:
-                volume_score += 10
-            strength_components.append(min(volume_score, 20))
+        if volume_sma is not None and ticker in memory.volume_history:
+            try:
+                volume_history = memory.volume_history[ticker]
+                current_volume = None
+                
+                if hasattr(volume_history, '__len__') and len(volume_history) > 0:
+                    try:
+                        current_volume = float(volume_history[-1])
+                    except (IndexError, TypeError, ValueError):
+                        current_volume = None
+                elif volume_history is not None:
+                    try:
+                        current_volume = float(volume_history)
+                    except (TypeError, ValueError):
+                        current_volume = None
+                
+                if current_volume is not None and current_volume > 0 and volume_sma > 0:
+                    volume_score = 0
+                    volume_ratio = current_volume / volume_sma
+                    
+                    if volume_ratio > MIN_VOLUME_SPIKE:
+                        volume_score += 20
+                    elif volume_ratio > 1.2:
+                        volume_score += 10
+                    
+                    strength_components.append(min(volume_score, 20))
+                    
+            except Exception as e:
+                logger.debug(f"Volume analysis error for {ticker}: {e}")
+                pass
         
         # Volatility check (15% weight)
         atr = indicators.get('atr_14')
         volatility_ratio = indicators.get('volatility_ratio', 1.0)
-        if atr and volatility_ratio:
+        if atr is not None and volatility_ratio is not None:
             volatility_score = 0
             if volatility_ratio < 1.5:
                 volatility_score += 15
@@ -1290,18 +1565,22 @@ def calculate_signal_strength(ticker: str, indicators: Dict, current_price: floa
         # Support/Resistance (10% weight)
         bb_lower = indicators.get('bb_lower')
         bb_upper = indicators.get('bb_upper')
-        if bb_lower and bb_upper:
-            sr_score = 0
-            if current_price > bb_lower and current_price < bb_upper:
-                sr_score += 5
-            if current_price > bb_lower * 1.02:
-                sr_score += 5
-            strength_components.append(min(sr_score, 10))
+        if bb_lower is not None and bb_upper is not None:
+            try:
+                sr_score = 0
+                if bb_lower < current_price < bb_upper:
+                    sr_score += 5
+                if current_price > bb_lower * 1.02:
+                    sr_score += 5
+                strength_components.append(min(sr_score, 10))
+            except Exception as e:
+                logger.debug(f"Support/Resistance analysis error for {ticker}: {e}")
+                pass
         
         return min(sum(strength_components), 100.0)
         
     except Exception as e:
-        logger.error(f"Error calculating cached signal strength for {ticker}: {e}")
+        logger.error(f"Error calculating signal strength for {ticker}: {e}")
         return 0.0
 
 def calculate_market_sentiment() -> str:
@@ -1333,59 +1612,113 @@ def calculate_market_sentiment() -> str:
         print(f"Error calculating market sentiment: {e}")
         return 'NEUTRAL'
 
+# def safe_extract(value, fallback=None):
+#     """
+#     Safely extract a numeric value from various data types
+    
+#     Args:
+#         value: The value to extract from (Series, array, list, scalar)
+#         fallback: Optional fallback value if extraction fails
+    
+#     Returns:
+#         Extracted float value or fallback/None
+#     """
+#     if value is None:
+#         return fallback
+    
+#     try:
+#         # Handle pandas Series
+#         if hasattr(value, 'iloc') :
+#             if len(value) > 0:
+#                 result = float(value.iloc[-1])
+#                 return result if not (hasattr(result, '__iter__') or 
+#                                     (hasattr(result, 'shape') and result.shape)) else fallback
+#             else:
+#                 return fallback
+        
+#         # Handle numpy arrays
+#         elif hasattr(value, 'shape'):
+#             if value.size > 0:
+#                 result = float(value.flat[-1])  # Use .flat to handle any shape
+#                 return result if not (hasattr(result, '__iter__') or 
+#                                     (hasattr(result, 'shape') and result.shape)) else fallback
+#             else:
+#                 return fallback
+        
+#         # Handle lists and tuples
+#         elif isinstance(value, (list, tuple)):
+#             if len(value) > 0:
+#                 return float(value[-1])
+#             else:
+#                 return fallback
+        
+#         # Handle scalar values (including numpy scalars)
+#         else:
+#             try:
+#                 result = float(value)
+#                 # Check if it's a valid number
+#                 if hasattr(result, '__iter__'):  # Still an array somehow
+#                     return fallback
+#                 return result
+#             except (ValueError, TypeError):
+#                 return fallback
+            
+#     except (ValueError, TypeError, IndexError, AttributeError) as e:
+#         print(f"Warning: safe_extract failed for value {type(value)}: {e}")
+#         return fallback
+
 def safe_extract(value, fallback=None):
     """
-    Safely extract a numeric value from various data types
-    
-    Args:
-        value: The value to extract from (Series, array, list, scalar)
-        fallback: Optional fallback value if extraction fails
-    
-    Returns:
-        Extracted float value or fallback/None
+    Enhanced safe_extract that handles all edge cases properly
     """
     if value is None:
         return fallback
     
     try:
         # Handle pandas Series
-        if hasattr(value, 'iloc'):
+        if hasattr(value, 'iloc') and hasattr(value, '__len__'):
             if len(value) > 0:
-                result = float(value.iloc[-1])
-                return result if not (hasattr(result, '__iter__') or 
-                                    (hasattr(result, 'shape') and result.shape)) else fallback
-            else:
-                return fallback
+                extracted = value.iloc[-1]
+                # Check if extracted value is still an array/series
+                if hasattr(extracted, '__iter__') and not isinstance(extracted, (str, bytes)):
+                    return fallback
+                return float(extracted)
+            return fallback
         
         # Handle numpy arrays
-        elif hasattr(value, 'shape'):
+        elif hasattr(value, 'shape') and hasattr(value, 'size'):
             if value.size > 0:
-                result = float(value.flat[-1])  # Use .flat to handle any shape
-                return result if not (hasattr(result, '__iter__') or 
-                                    (hasattr(result, 'shape') and result.shape)) else fallback
-            else:
-                return fallback
+                try:
+                    extracted = value.flat[-1]
+                    if hasattr(extracted, '__iter__') and not isinstance(extracted, (str, bytes)):
+                        return fallback
+                    return float(extracted)
+                except (IndexError, ValueError):
+                    return fallback
+            return fallback
         
         # Handle lists and tuples
         elif isinstance(value, (list, tuple)):
             if len(value) > 0:
-                return float(value[-1])
-            else:
-                return fallback
+                try:
+                    return float(value[-1])
+                except (ValueError, TypeError):
+                    return fallback
+            return fallback
         
-        # Handle scalar values (including numpy scalars)
+        # Handle scalar values
         else:
             try:
                 result = float(value)
-                # Check if it's a valid number
-                if hasattr(result, '__iter__'):  # Still an array somehow
+                # Additional check for numpy scalars that might still be arrays
+                if hasattr(result, '__iter__') and not isinstance(result, (str, bytes)):
                     return fallback
                 return result
             except (ValueError, TypeError):
                 return fallback
             
-    except (ValueError, TypeError, IndexError, AttributeError) as e:
-        print(f"Warning: safe_extract failed for value {type(value)}: {e}")
+    except Exception as e:
+        logger.debug(f"safe_extract_fixed error: {e}")
         return fallback
 
 # ============================
@@ -2000,15 +2333,109 @@ def has_earnings_soon(ticker: str) -> bool:
 #         logger.error(f"Error in staged analysis for {ticker}: {e}")
 #         memory.last_action_status[ticker] = 'ERROR'
 
+# def analyze_stock_staged(ticker: str):
+#     """Fixed staged analysis with proper caching"""
+#     try:
+#         if memory.shutdown_flag:
+#             return
+        
+#         # Memory check
+#         current_process_mb = psutil.Process().memory_info().rss / 1024 / 1024
+#         if current_process_mb > 350:  # Lower threshold for safety
+#             logger.warning(f"High memory before {ticker}: {current_process_mb:.1f}MB")
+#             enhanced_cleanup_memory()
+        
+#         # Stage 1: Get cached historical data
+#         historical_df = data_cache.get_cached_historical(ticker, period="6mo")
+#         if historical_df is None or historical_df.empty:
+#             logger.warning(f"No historical data for {ticker}")
+#             return
+        
+#         # Stage 2: Get cached compressed indicators
+#         indicators = data_cache.get_cached_indicators(ticker, historical_df)
+#         if not indicators:
+#             logger.warning(f"Failed to calculate indicators for {ticker}")
+#             return
+        
+#         # Stage 3: Get real-time data
+#         realtime_data = get_realtime_data(ticker)
+#         if not realtime_data:
+#             logger.warning(f"No real-time data for {ticker}")
+#             return
+        
+#         current_price = realtime_data['price']
+        
+#         # Stage 4: Use cached signal strength calculation
+#         signal_strength = calculate_signal_strength(ticker, indicators, current_price)
+#         memory.signal_strength[ticker] = signal_strength
+        
+#         # Rest of analysis using cached indicators...
+#         # (Your existing trading logic here)
+#         # Check shutdown flag        
+#         if memory.shutdown_flag:
+#             return
+        
+#         # Fetch enhanced historical data
+#         historical_df = get_stock_data(ticker, period="6mo")
+#         if historical_df is None or historical_df.empty:
+#             print(f"No historical data for {ticker}")
+#             return
+        
+#         # Calculate advanced indicators
+#         indicators = calculate_advanced_indicators(historical_df)
+#         if not indicators:
+#             print(f"Failed to calculate indicators for {ticker}")
+#             return
+        
+#         # Get enhanced real-time data
+#         realtime_data = get_realtime_data(ticker)
+#         if not realtime_data:
+#             print(f"No real-time data for {ticker}")
+#             return
+        
+#         current_price = realtime_data['price']
+        
+#         # Calculate signal strength
+#         signal_strength = calculate_signal_strength(ticker, indicators, current_price)
+#         memory.signal_strength[ticker] = signal_strength
+        
+#         # Update trailing stops for existing positions
+#         if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
+#             update_dynamic_trailing_stop(ticker, current_price, indicators)
+        
+#         # Check for advanced alerts
+#         check_advanced_alerts(ticker, current_price, indicators, realtime_data)
+        
+#         # Advanced trading decisions
+#         should_sell, sell_reason = advanced_should_sell(ticker, indicators, current_price)
+#         if should_sell:
+#             execute_advanced_sell(ticker, current_price, sell_reason)
+#             memory.last_action_status[ticker] = 'SELL_SIGNAL'
+#         else:
+#             should_buy, buy_reason = advanced_should_buy(ticker, indicators, current_price, realtime_data)
+#             if should_buy:
+#                 execute_advanced_buy(ticker, current_price, indicators, buy_reason)
+#                 memory.last_action_status[ticker] = 'BUY_SIGNAL'
+#             else:
+#                 # Determine current status
+#                 if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
+#                     memory.last_action_status[ticker] = f'HOLD ({sell_reason})'
+#                 else:
+#                     memory.last_action_status[ticker] = f'WAIT ({buy_reason})'
+
+#     except Exception as e:
+#         logger.error(f"Error in fixed staged analysis for {ticker}: {e}")
+#         memory.last_action_status[ticker] = 'ERROR'
+
 def analyze_stock_staged(ticker: str):
-    """Fixed staged analysis with proper caching"""
+    """Fixed staged analysis - CLEAN VERSION"""
     try:
         if memory.shutdown_flag:
             return
         
         # Memory check
         current_process_mb = psutil.Process().memory_info().rss / 1024 / 1024
-        if current_process_mb > 350:  # Lower threshold for safety
+        if current_process_mb > 350:
             logger.warning(f"High memory before {ticker}: {current_process_mb:.1f}MB")
             enhanced_cleanup_memory()
         
@@ -2018,7 +2445,7 @@ def analyze_stock_staged(ticker: str):
             logger.warning(f"No historical data for {ticker}")
             return
         
-        # Stage 2: Get cached compressed indicators
+        # Stage 2: Get cached compressed indicators (single values only)
         indicators = data_cache.get_cached_indicators(ticker, historical_df)
         if not indicators:
             logger.warning(f"Failed to calculate indicators for {ticker}")
@@ -2032,37 +2459,7 @@ def analyze_stock_staged(ticker: str):
         
         current_price = realtime_data['price']
         
-        # Stage 4: Use cached signal strength calculation
-        signal_strength = calculate_signal_strength(ticker, indicators, current_price)
-        memory.signal_strength[ticker] = signal_strength
-        
-        # Rest of analysis using cached indicators...
-        # (Your existing trading logic here)
-        # Check shutdown flag        
-        if memory.shutdown_flag:
-            return
-        
-        # Fetch enhanced historical data
-        historical_df = get_stock_data(ticker, period="6mo")
-        if historical_df is None or historical_df.empty:
-            print(f"No historical data for {ticker}")
-            return
-        
-        # Calculate advanced indicators
-        indicators = calculate_advanced_indicators(historical_df)
-        if not indicators:
-            print(f"Failed to calculate indicators for {ticker}")
-            return
-        
-        # Get enhanced real-time data
-        realtime_data = get_realtime_data(ticker)
-        if not realtime_data:
-            print(f"No real-time data for {ticker}")
-            return
-        
-        current_price = realtime_data['price']
-        
-        # Calculate signal strength
+        # Stage 4: Analysis using compressed indicators
         signal_strength = calculate_signal_strength(ticker, indicators, current_price)
         memory.signal_strength[ticker] = signal_strength
         
@@ -2070,10 +2467,10 @@ def analyze_stock_staged(ticker: str):
         if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
             update_dynamic_trailing_stop(ticker, current_price, indicators)
         
-        # Check for advanced alerts
+        # Check for alerts
         check_advanced_alerts(ticker, current_price, indicators, realtime_data)
         
-        # Advanced trading decisions
+        # Trading decisions
         should_sell, sell_reason = advanced_should_sell(ticker, indicators, current_price)
         if should_sell:
             execute_advanced_sell(ticker, current_price, sell_reason)
@@ -2084,15 +2481,15 @@ def analyze_stock_staged(ticker: str):
                 execute_advanced_buy(ticker, current_price, indicators, buy_reason)
                 memory.last_action_status[ticker] = 'BUY_SIGNAL'
             else:
-                # Determine current status
                 if ticker in memory.holdings and memory.holdings[ticker].get('shares', 0) > 0:
                     memory.last_action_status[ticker] = f'HOLD ({sell_reason})'
                 else:
                     memory.last_action_status[ticker] = f'WAIT ({buy_reason})'
 
     except Exception as e:
-        logger.error(f"Error in fixed staged analysis for {ticker}: {e}")
+        logger.error(f"Error in staged analysis for {ticker}: {e}")
         memory.last_action_status[ticker] = 'ERROR'
+
 
 # def analyze_stock_advanced(ticker: str):
 #     """Advanced stock analysis with comprehensive signal generation"""
