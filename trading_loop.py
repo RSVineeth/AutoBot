@@ -2133,12 +2133,12 @@ def check_advanced_alerts(ticker: str, current_price: float, indicators: Dict, r
                     # message += f" Current: Rs.{current_price:.2f}\n"
                     # message += f" Key level to watch!"
 
-                    message = f"⚠️ *SUPPORT LEVEL ALERT* ⚠️\n"
-                    message += f"📉 {symbol} near support at Rs.{support_level:.2f}\n"
-                    message += f"💵 Current: Rs.{current_price:.2f}\n"
-                    message += f"👀 Key level to watch! 🎯"
+                    # message = f"⚠️ *SUPPORT LEVEL ALERT* ⚠️\n"
+                    # message += f"📉 {symbol} near support at Rs.{support_level:.2f}\n"
+                    # message += f"💵 Current: Rs.{current_price:.2f}\n"
+                    # message += f"👀 Key level to watch! 🎯"
                     
-                    send_telegram_message(message)
+                    # send_telegram_message(message)
                     memory.alerts_sent[ticker]['support'] = True
         
         # 3. Enhanced 52-week high alert
@@ -2487,7 +2487,7 @@ def analyze_stock_staged(ticker: str):
                     memory.last_action_status[ticker] = f'WAIT ({buy_reason})'
 
     except Exception as e:
-        logger.error(f"Error in staged analysis for {ticker}: {e}")
+        logger.error(f"Error in analysis for {ticker}: {e}")
         memory.last_action_status[ticker] = 'ERROR'
 
 
@@ -2785,9 +2785,9 @@ def is_alive_check_time() -> bool:
 
 def main_advanced_trading_loop():
     """Main trading loop with staged loading"""
-    logger.info("🤖 Advanced Stock Trading Bot v2.0 with Staged Loading Started! 🚀")
+    logger.info("🤖 Advanced Stock Trading Bot v2.0 with Loading Started! 🚀")
     send_telegram_message("🤖 *Advanced Stock Trading Bot v2.0 Started!* 🚀\n"
-                        "⚡ Enhanced with staged data loading\n"
+                        "⚡ Enhanced with data loading\n"
                         "🧠 Memory-optimized analysis\n"
                         "🎯 40 ticker monitoring ✅")
 
@@ -2821,7 +2821,7 @@ def main_advanced_trading_loop():
                 time.sleep(CHECK_INTERVAL)
                 continue
             
-            logger.info(f"\n[{current_time.strftime('%H:%M:%S')}] Staged Analysis Cycle #{loop_count}")
+            logger.info(f"\n[{current_time.strftime('%H:%M:%S')}] Analysis Cycle #{loop_count}")
 
             # System health monitoring
             if loop_count % 6 == 0:
@@ -2859,7 +2859,7 @@ def main_advanced_trading_loop():
                 active_positions = sum(1 for ticker in memory.holdings if memory.holdings[ticker].get('shares', 0) > 0)
                 strong_signals = sum(1 for strength in memory.signal_strength.values() if strength > 70)
                 
-                summary_msg = f"⏰ *Staged Loading Hourly Summary* 📊\n"
+                summary_msg = f"⏰ *Hourly Summary* 📊\n"
                 summary_msg += f"🔥 Active: {active_positions} | ⚡ Strong signals: {strong_signals}\n"
                 summary_msg += f"📈 Market: {memory.market_sentiment} | 💰 P&L: Rs.{memory.total_pnl:.2f}\n"
                 summary_msg += f"🎯 Win rate: {(memory.profitable_trades/memory.total_trades*100):.1f}%" if memory.total_trades > 0 else "🎯 Win rate: 0%"
@@ -2867,15 +2867,15 @@ def main_advanced_trading_loop():
 
                 send_telegram_message(summary_msg)
             
-            logger.info(f"[{current_time.strftime('%H:%M:%S')}] Staged cycle complete. Next analysis in {CHECK_INTERVAL//60} minutes...")
+            logger.info(f"[{current_time.strftime('%H:%M:%S')}] Cycle complete. Next analysis in {CHECK_INTERVAL//60} minutes...")
             
         except KeyboardInterrupt:
-            logger.info("🛑 Staged Bot stopped by user")
+            logger.info("🛑 Bot stopped by user")
             cleanup_and_exit()
             break
         except Exception as e:
-            logger.error(f"Error in staged trading loop: {e}")
-            error_msg = f"🚨 *Staged Bot Error* ⚠️\n🔄 Cycle #{loop_count}\n❌ Error: {str(e)[:100]}\n✅ Bot continuing..."
+            logger.error(f"Error in trading loop: {e}")
+            error_msg = f"🚨 *Bot Error* ⚠️\n🔄 Cycle #{loop_count}\n❌ Error: {str(e)[:100]}\n✅ Bot continuing..."
             send_telegram_message(error_msg)
         
         time.sleep(CHECK_INTERVAL)
